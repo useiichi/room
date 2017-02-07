@@ -1,0 +1,12 @@
+{{define "sessions_new"}}
+<h1>Log in</h1>  
+  
+<form action="/taka2/sessions" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="qxvLSlsCddhKpqYVKlGh+zMxyGLa/STft1kPcyn1wPNC7+JspE4QI+o/Jz24kp6vRDv0fYs8TdjfUWIFAK0+2Q==" />  
+  <div class="field">  
+    <label for="password">Password</label>  
+    <input type="password" name="password" id="password" />  
+  </div>  
+  <p>パスワードはあなたの名前です。</p>
+  <div class="actions"><input type="submit" name="commit" value="Log in" data-disable-with="Log in" /></div>  
+</form>
+{{end}}

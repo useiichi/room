@@ -4,12 +4,30 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"strconv"
 
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gocraft/dbr"
+	"github.com/ipfans/echo-session"
 	"github.com/labstack/echo"
+)
+
+type Messages struct {
+	Userid int    `db:"userid"`
+	Body   string `db:"body"`
+}
+
+var (
+	conn, _ = dbr.Open("mysql", "uuu:oohana@tcp(www5183ui.sakura.ne.jp:3306)/taka", nil)
+	sess    = conn.NewSession(nil)
 )
 
 func main() {
 	e := echo.New()
+
+	store := session.NewCookieStore([]byte("secret"))
+	e.Use(session.Sessions("GSESSION", store))
+
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
@@ -23,11 +41,22 @@ func main() {
 
 	e.Static("/static", "static")
 
+	funcMap := template.FuncMap{
+		"add": func(a, b int) int { return a + b },
+		"sub": func(a, b int) int { return a - b },
+		"mul": func(a, b int) int { return a * b },
+		"div": func(a, b int) int { return a / b },
+		"mod": func(a, b int) int { return a % b },
+	}
+
 	t := &Template{
-		templates: template.Must(template.ParseGlob("public/views/*.html")),
+		templates: template.Must(template.New("calculator").Funcs(funcMap).ParseGlob("public/views/*.html")),
 	}
 	e.Renderer = t
 	e.GET("/hello", Hello)
+	e.GET("/taka2/sessions/new", SessionsNew)
+	e.POST("/taka2/sessions", createSessions)
+	e.GET("/taka2/messages", MessagesIndex)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
@@ -64,4 +93,32 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 
 func Hello(c echo.Context) error {
 	return c.Render(http.StatusOK, "hello", "World")
+}
+
+func SessionsNew(c echo.Context) error {
+	return c.Render(http.StatusOK, "sessions_new", "World")
+}
+
+func createSessions(c echo.Context) error {
+	session := session.Default(c)
+
+	password := c.FormValue("password")
+	if password == "uuu" {
+		session.Set("user_id", 1)
+		session.Save()
+	} else if password == "sss" {
+		session.Set("user_id", 2)
+		session.Save()
+	} else {
+		return c.Render(http.StatusOK, "sessions_new", "World")
+	}
+
+	return c.String(http.StatusOK, "password:"+strconv.Itoa(session.Get("user_id").(int)))
+}
+
+func MessagesIndex(c echo.Context) error {
+	var m []Messages
+	sess.Select("*").From("messages").Load(&m)
+
+	return c.Render(http.StatusOK, "messages_index", m)
 }
