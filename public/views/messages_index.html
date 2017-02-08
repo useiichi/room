@@ -27,7 +27,7 @@
 		{{.Body}}
     </td>
 		{{end}}
-		{{if eq .Userid 2}}
+		{{if eq (mod .Userid 2) 0}}
 	<td style="vertical-align: top">
    		<p><img src="https://www5183ui.sakura.ne.jp/taka/assets/iuki1d-adc586a805586525292dd6f7c5c51762bc10b08d5e5328863b959f5848c42bb2.gif" alt="Iuki1d" /></p>
    	</td>
@@ -35,12 +35,7 @@
     	{{.Body}}
     </td>
 	    {{end}}
-    	<% else %>
-    	<td colspan="2">
-    		error message.userid=<%= message.userid %>
-    	</td>
-    	<%	end %>
-    <td style="vertical-align: top"><p><%= message.created_at.strftime("%Y年%m月%d日, %H:%M:%S") %></p></td>
+    <td style="vertical-align: top"><p>{{.Created_at}}</p></td>
     <!--td style="vertical-align: top"><p><%= link_to 'Show', message %></td-->
     <% if message.userid == session[:user_id] %>
     <td style="vertical-align: top" nowrap><p><%= link_to '編集', edit_message_path(message) %></p></td>

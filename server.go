@@ -13,8 +13,9 @@ import (
 )
 
 type Messages struct {
-	Userid int    `db:"userid"`
-	Body   string `db:"body"`
+	Userid     int          `db:"userid"`
+	Body       string       `db:"body"`
+	Created_at dbr.NullTime `db:"created_at"`
 }
 
 var (
