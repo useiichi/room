@@ -121,5 +121,10 @@ func MessagesIndex(c echo.Context) error {
 	var m []Messages
 	sess.Select("*").From("messages").Load(&m)
 
-	return c.Render(http.StatusOK, "messages_index", m)
+	session := session.Default(c)
+
+	return c.Render(http.StatusOK, "messages_index", struct {
+		Session_user_id int
+		Mmm             []Messages
+	}{session.Get("user_id").(int), m})
 }

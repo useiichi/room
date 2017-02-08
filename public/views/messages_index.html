@@ -2,7 +2,7 @@
 <h1><span style="color: #FF69B4">憩</span>の部屋</h1>
 
 
-<%= link_to 'メッセージを書く', new_message_path %>
+<a href="/taka/messages/new">メッセージを書く</a>
 <br />
 <br />
 
@@ -16,12 +16,13 @@
     <th></th>
   </tr-->
 
-{{range .}}
+{{$se_id := .Session_user_id}}
+{{range .Mmm}}
   <tr>
     <!--td><%= message.userid %></td-->
     	{{if eq (mod .Userid 2) 1}}
 	<td style="vertical-align: top; width: 5px">
-   		<p>{{add .Userid 1}}<img src="https://www5183ui.sakura.ne.jp/taka/assets/ineko3b-56d123ce3c4f9fedd94072c693a50f76d8b67109f64ee335886262bf916ef209.gif" alt="Ineko3b" />'ineko3b.gif'</p>
+   		<p><img src="https://www5183ui.sakura.ne.jp/taka/assets/ineko3b-56d123ce3c4f9fedd94072c693a50f76d8b67109f64ee335886262bf916ef209.gif" alt="Ineko3b" /></p>
    	</td>
     <td style="vertical-align: top; color: #FF69B4">
 		{{.Body}}
@@ -37,10 +38,10 @@
 	    {{end}}
     <td style="vertical-align: top"><p>{{.Created_at}}</p></td>
     <!--td style="vertical-align: top"><p><%= link_to 'Show', message %></td-->
-    <% if message.userid == session[:user_id] %>
-    <td style="vertical-align: top" nowrap><p><%= link_to '編集', edit_message_path(message) %></p></td>
-    <td style="vertical-align: top" nowrap><p><%= link_to '削除', message, method: :delete, data: { confirm: 'Are you sure?' } %></p></td>
-    <% end %>
+    {{if eq .Userid $se_id}}
+    <td style="vertical-align: top" nowrap><p><a href="/taka/messages/35/edit">編集</a></p></td>
+    <td style="vertical-align: top" nowrap><p><a data-confirm="Are you sure?" rel="nofollow" data-method="delete" href="/taka/messages/35">削除</a></p></td>
+    {{end}}
   </tr>
 {{end}}
 </table>
