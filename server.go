@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gocraft/dbr"
@@ -58,8 +61,15 @@ func main() {
 	e.GET("/taka2/sessions/new", SessionsNew)
 	e.POST("/taka2/sessions", createSessions)
 	e.GET("/taka2/messages", MessagesIndex)
+	e.GET("/taka2/messages/new", MessagesNew)
+	e.POST("/taka2/messages", MessagesCreate)
+	e.GET("/taka2/messages/:id", MessagesShow)
 
-	e.Logger.Fatal(e.Start(":1323"))
+	port := os.Getenv("PORT")
+	if len(port) == 0 {
+		port = "1323"
+	}
+	e.Logger.Fatal(e.Start(":" + port))
 }
 
 // e.GET("/users/:id", getUser)
@@ -127,4 +137,30 @@ func MessagesIndex(c echo.Context) error {
 		Session_user_id int
 		Mmm             []Messages
 	}{session.Get("user_id").(int), m})
+}
+
+func MessagesNew(c echo.Context) error {
+	return c.Render(http.StatusOK, "messages_new", "World")
+}
+
+func MessagesCreate(c echo.Context) error {
+	fmt.Fprint(os.Stdout, c.FormValue("message[body]"))
+	session := session.Default(c)
+	result, err := sess.InsertInto("messages").
+		Columns("userid", "body", "created_at", "updated_at").
+		Values(session.Get("user_id").(int), c.FormValue("message[body]"), time.Now(), time.Now()).
+		Exec()
+
+	var count int64 = 1
+	if err != nil {
+		//log.Fatal(err)
+	} else {
+		count, _ = result.RowsAffected()
+		//fmt.Println(count) // => 1
+	}
+	return c.Render(http.StatusOK, "messages_new", count)
+}
+
+func MessagesShow(c echo.Context) error {
+	return c.Render(http.StatusOK, "messages_new", "World")
 }
