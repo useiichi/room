@@ -16,6 +16,7 @@ import (
 )
 
 type Messages struct {
+	Id         int          `db:"id"`
 	Userid     int          `db:"userid"`
 	Body       string       `db:"body"`
 	Created_at dbr.NullTime `db:"created_at"`
@@ -64,6 +65,7 @@ func main() {
 	e.GET("/taka2/messages/new", MessagesNew)
 	e.POST("/taka2/messages", MessagesCreate)
 	e.GET("/taka2/messages/:id", MessagesShow)
+	e.GET("/taka2/messages/:id/delete", MessagesDestroy)
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
@@ -162,5 +164,14 @@ func MessagesCreate(c echo.Context) error {
 }
 
 func MessagesShow(c echo.Context) error {
+	fmt.Fprint(os.Stdout, "Show")
+	return c.Render(http.StatusOK, "messages_new", "World")
+}
+
+func MessagesDestroy(c echo.Context) error {
+	fmt.Fprint(os.Stdout, "Destroy"+c.Param("id"))
+	sess.DeleteFrom("messages").
+		Where("id = ?", c.Param("id")).
+		Exec()
 	return c.Render(http.StatusOK, "messages_new", "World")
 }
