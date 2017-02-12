@@ -66,10 +66,7 @@ func main() {
 	// Route level middleware
 	track := func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			println("request to /users")
 			session := session.Default(c)
-			//session.Set("user_id", 1)
-			//session.Save()
 			var s int
 			if session.Get("user_id") == nil {
 				s = 0
@@ -83,18 +80,17 @@ func main() {
 		}
 	}
 
-	e.GET("/hello", Hello)
 	e.GET("/taka2/sessions/new", SessionsNew)
 	e.POST("/taka2/sessions", createSessions)
-	e.GET("/taka2/sessions/:id/delete", SessionsDestroy)
+	e.GET("/taka2/sessions/:id/delete", SessionsDestroy, track)
 	e.GET("/taka2/messages", MessagesIndex, track)
 	e.GET("/taka2/messages/", MessagesIndex, track)
-	e.GET("/taka2/messages/new", MessagesNew)
-	e.POST("/taka2/messages", MessagesCreate)
-	e.GET("/taka2/messages/:id", MessagesShow)
-	e.GET("/taka2/messages/:id/delete", MessagesDestroy)
-	e.GET("/taka2/messages/:id/edit", MessagesEdit)
-	e.POST("/taka2/messages/:id", MessagesUpdate)
+	e.GET("/taka2/messages/new", MessagesNew, track)
+	e.POST("/taka2/messages", MessagesCreate, track)
+	e.GET("/taka2/messages/:id", MessagesShow, track)
+	e.GET("/taka2/messages/:id/delete", MessagesDestroy, track)
+	e.GET("/taka2/messages/:id/edit", MessagesEdit, track)
+	e.POST("/taka2/messages/:id", MessagesUpdate, track)
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
@@ -160,6 +156,12 @@ func createSessions(c echo.Context) error {
 	} else if password == "uuu" {
 		session.Set("user_id", 2)
 		session.Save()
+	} else if password == "aaa" {
+		session.Set("user_id", 3)
+		session.Save()
+	} else if password == "uuuaaa" {
+		session.Set("user_id", 4)
+		session.Save()
 	} else {
 		return c.Render(http.StatusOK, "sessions_new", struct {
 			Session_user_id int
@@ -170,10 +172,17 @@ func createSessions(c echo.Context) error {
 }
 
 func MessagesIndex(c echo.Context) error {
-	println("index")
-	var m []Messages
-	sess.Select("*").From("messages").OrderBy("id desc").Load(&m)
 	session := session.Default(c)
+	var her_id, my_id int
+	if session.Get("user_id").(int)%2 == 1 {
+		her_id = session.Get("user_id").(int)
+		my_id = session.Get("user_id").(int) + 1
+	} else {
+		her_id = session.Get("user_id").(int) - 1
+		my_id = session.Get("user_id").(int)
+	}
+	var m []Messages
+	sess.Select("*").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).OrderBy("id desc").Load(&m)
 
 	return c.Render(http.StatusOK, "messages_index", struct {
 		Session_user_id int
