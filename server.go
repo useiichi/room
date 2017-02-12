@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"html/template"
 	"io"
 	"net/http"
@@ -55,17 +55,40 @@ func main() {
 		"div": func(a, b int) int { return a / b },
 		"mod": func(a, b int) int { return a % b },
 		"br":  func(a string) string { return strings.Replace(a, "\n", "<br/>", -1) },
+		"dt":  func(a dbr.NullTime) string { return a.Time.Format("2006年01月02日, 15:04:05") },
 	}
 
 	t := &Template{
 		templates: template.Must(template.New("calculator").Funcs(funcMap).ParseGlob("public/views/*.html")),
 	}
 	e.Renderer = t
+
+	// Route level middleware
+	track := func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			println("request to /users")
+			session := session.Default(c)
+			//session.Set("user_id", 1)
+			//session.Save()
+			var s int
+			if session.Get("user_id") == nil {
+				s = 0
+			} else {
+				s = session.Get("user_id").(int)
+			}
+			if s == 0 {
+				return c.Redirect(302, "/taka2/sessions/new")
+			}
+			return next(c)
+		}
+	}
+
 	e.GET("/hello", Hello)
 	e.GET("/taka2/sessions/new", SessionsNew)
 	e.POST("/taka2/sessions", createSessions)
-	e.GET("/taka2/messages", MessagesIndex)
-	e.GET("/taka2/messages/", MessagesIndex)
+	e.GET("/taka2/sessions/:id/delete", SessionsDestroy)
+	e.GET("/taka2/messages", MessagesIndex, track)
+	e.GET("/taka2/messages/", MessagesIndex, track)
 	e.GET("/taka2/messages/new", MessagesNew)
 	e.POST("/taka2/messages", MessagesCreate)
 	e.GET("/taka2/messages/:id", MessagesShow)
@@ -115,30 +138,41 @@ func Hello(c echo.Context) error {
 }
 
 func SessionsNew(c echo.Context) error {
-	return c.Render(http.StatusOK, "sessions_new", "World")
+	session := session.Default(c)
+	var s int
+	if session.Get("user_id") == nil {
+		s = 0
+	} else {
+		s = session.Get("user_id").(int)
+	}
+	return c.Render(http.StatusOK, "sessions_new", struct {
+		Session_user_id int
+	}{s})
 }
 
 func createSessions(c echo.Context) error {
 	session := session.Default(c)
 
 	password := c.FormValue("password")
-	if password == "uuu" {
+	if password == "sss" {
 		session.Set("user_id", 1)
 		session.Save()
-	} else if password == "sss" {
+	} else if password == "uuu" {
 		session.Set("user_id", 2)
 		session.Save()
 	} else {
-		return c.Render(http.StatusOK, "sessions_new", "World")
+		return c.Render(http.StatusOK, "sessions_new", struct {
+			Session_user_id int
+		}{0})
 	}
 
-	return c.String(http.StatusOK, "password:"+strconv.Itoa(session.Get("user_id").(int)))
+	return c.Redirect(302, "/taka2/messages/")
 }
 
 func MessagesIndex(c echo.Context) error {
+	println("index")
 	var m []Messages
-	sess.Select("*").From("messages").Load(&m)
-
+	sess.Select("*").From("messages").OrderBy("id desc").Load(&m)
 	session := session.Default(c)
 
 	return c.Render(http.StatusOK, "messages_index", struct {
@@ -148,52 +182,61 @@ func MessagesIndex(c echo.Context) error {
 }
 
 func MessagesNew(c echo.Context) error {
-	return c.Render(http.StatusOK, "messages_new", "World")
+	session := session.Default(c)
+	return c.Render(http.StatusOK, "messages_new", struct {
+		Session_user_id int
+	}{session.Get("user_id").(int)})
 }
 
 func MessagesCreate(c echo.Context) error {
-	fmt.Fprint(os.Stdout, c.FormValue("message[body]"))
 	session := session.Default(c)
 	result, err := sess.InsertInto("messages").
 		Columns("userid", "body", "created_at", "updated_at").
 		Values(session.Get("user_id").(int), c.FormValue("message[body]"), time.Now(), time.Now()).
 		Exec()
 
-	var count int64 = 1
+	//var count int64
+	var lii int64
 	if err != nil {
 		//log.Fatal(err)
+		//count = 1
 	} else {
-		count, _ = result.RowsAffected()
+		//count, _ = result.RowsAffected()
+		lii, _ = result.LastInsertId()
 		//fmt.Println(count) // => 1
 	}
-	return c.Render(http.StatusOK, "messages_new", count)
+	return c.Redirect(302, "/taka2/messages/"+strconv.FormatInt(lii, 10))
 }
 
 func MessagesShow(c echo.Context) error {
+	session := session.Default(c)
 	var m []Messages
 	sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
 	var mm Messages
 	mm = m[0]
-	return c.Render(http.StatusOK, "messages_show", mm)
+	return c.Render(http.StatusOK, "messages_show", struct {
+		Session_user_id int
+		Mmm             Messages
+	}{session.Get("user_id").(int), mm})
 }
 
 func MessagesDestroy(c echo.Context) error {
-	fmt.Fprint(os.Stdout, "Destroy"+c.Param("id"))
 	sess.DeleteFrom("messages").
 		Where("id = ?", c.Param("id")).
 		Exec()
-	return c.Render(http.StatusOK, "messages_new", "World")
+	return c.Redirect(302, "/taka2/messages/")
 }
 
 func MessagesEdit(c echo.Context) error {
-	//sess.DeleteFrom("messages").
-	//	Where("id = ?", c.Param("id")).
-	//	Exec()
+	session := session.Default(c)
 	var m []Messages
 	sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
 	var mm Messages
 	mm = m[0]
-	return c.Render(http.StatusOK, "messages_edit", mm)
+	return c.Render(http.StatusOK, "messages_edit", struct {
+		Session_user_id int
+		Mmm             Messages
+	}{session.Get("user_id").(int), mm})
 }
 
 func MessagesUpdate(c echo.Context) error {
@@ -212,4 +255,16 @@ func MessagesUpdate(c echo.Context) error {
 	}
 	count = count + 1
 	return c.Redirect(302, "/taka2/messages/"+c.Param("id"))
+}
+
+func SessionsDestroy(c echo.Context) error {
+	session := session.Default(c)
+
+	if id, _ := strconv.Atoi(c.Param("id")); session.Get("user_id").(int) == id {
+		println("session clear")
+		//session.Set("user_id", 32)
+		session.Clear()
+		session.Save()
+	}
+	return c.Redirect(302, "/taka2/messages/")
 }

@@ -1,52 +1,21 @@
 {{define "messages_edit"}}
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Room</title>
-  <link rel="stylesheet" media="all" href="/taka/assets/application-0723cb9a2dd5a514d954f70e0fe0b89f6f9f1ae3a375c182f43b5f2b57e9c869.css" />
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-
-	<script type="text/javascript">
-		$(document).bind("mobileinit", function(){
-		  $.mobile.ajaxEnabled = false;
-		  $.mobile.pushStateEnabled = false;
-		});
-	</script>
-
-    <meta name="viewport" content="width=device-width, initial-scale=1,minimum-scale=1, maximum-scale=1">
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
-
-  <script src="/taka/assets/application-f30440b47d139f3c44209ac926f052f1f674bd6d0fe9c347016ca05cc70f5ec6.js"></script>
-  <meta name="csrf-param" content="authenticity_token" />
-<meta name="csrf-token" content="s0sTVQGMiBRrdk6U0xKndFX4iW3qIwpObchigPVCh4havzpz/sDt78vvz7xB0ZggIvK1crviY0kFwA/23Bp5og==" />
-</head>
-<body>
-
-<div id="user_nav">
-    <a rel="nofollow" data-method="delete" href="/taka/sessions/1">ログアウト</a>
-</div>
+{{template "header.html" .}}
 
 <h1>編集画面</h1>
 
-<form class="new_message" id="new_message" action="/taka2/messages/{{.Id}}" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="PUkYzx9U9Zoz8aa9NeWpu/c0jHDm70PgO2Bwjp1SyP3UvTHp4BiQYZNoJ5WnJpbvgD6wb7cuKudTaB34tAo21w==" />
+<form class="new_message" id="new_message" action="/taka2/messages/{{.Mmm.Id}}" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="PUkYzx9U9Zoz8aa9NeWpu/c0jHDm70PgO2Bwjp1SyP3UvTHp4BiQYZNoJ5WnJpbvgD6wb7cuKudTaB34tAo21w==" />
 
-  <!--div class="field">
-    <label for="message_userid">Userid</label><br>
-    <input type="number" name="message[userid]" id="message_userid" />
-  </div-->
   <div class="field">
        メッセージ<br>
     <textarea name="message[body]" id="message_body">
-{{.Body}}</textarea>
+{{.Mmm.Body}}</textarea>
   </div>
   <div class="actions">
     <input type="submit" name="commit" value="書き込む" data-disable-with="書き込む" />
   </div>
 </form>
 
-<a href="/taka2/messages/{{.Id}}">Show</a> |
+<a href="/taka2/messages/{{.Mmm.Id}}">Show</a> |
 <a href="/taka2/messages">Back</a>
 
 </body>

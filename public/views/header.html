@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Room</title>
+  <link rel="stylesheet" media="all" href="/taka/assets/application-0723cb9a2dd5a514d954f70e0fe0b89f6f9f1ae3a375c182f43b5f2b57e9c869.css" />
+
+	<!--script src="http://code.jquery.com/jquery-2.0.3.min.js"></script-->
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.3.min.js"></script>
+
+	<script type="text/javascript">
+		$(document).bind("mobileinit", function(){
+		  $.mobile.ajaxEnabled = false;
+		  $.mobile.pushStateEnabled = false;
+		});
+	</script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1,minimum-scale=1, maximum-scale=1">
+	<!--link rel="stylesheet" href="http://codeorigin.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css" /-->
+	<link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/jquery.mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+
+	<!--script src="http://codeorigin.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script-->
+	<!--script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script-->
+	<script src="https://ajax.aspnetcdn.com/ajax/jquery.mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
+  <script src="/taka/assets/application-f30440b47d139f3c44209ac926f052f1f674bd6d0fe9c347016ca05cc70f5ec6.js"></script>
+</head>
+<body>
+
+<div id="user_nav">
+  {{if eq .Session_user_id 0}}
+  {{else}}
+    <a href="/taka2/sessions/{{.Session_user_id}}/delete">ログアウト</a>
+  {{end}}
+</div>
