@@ -1,4 +1,4 @@
-{{define "messages_new"}}
+{{define "messages_edit"}}
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,9 +28,9 @@
     <a rel="nofollow" data-method="delete" href="/taka/sessions/1">ログアウト</a>
 </div>
 
-<h1>書き込み画面</h1>
+<h1>編集画面</h1>
 
-<form class="new_message" id="new_message" action="/taka2/messages" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="PUkYzx9U9Zoz8aa9NeWpu/c0jHDm70PgO2Bwjp1SyP3UvTHp4BiQYZNoJ5WnJpbvgD6wb7cuKudTaB34tAo21w==" />
+<form class="new_message" id="new_message" action="/taka2/messages/{{.Id}}" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="PUkYzx9U9Zoz8aa9NeWpu/c0jHDm70PgO2Bwjp1SyP3UvTHp4BiQYZNoJ5WnJpbvgD6wb7cuKudTaB34tAo21w==" />
 
   <!--div class="field">
     <label for="message_userid">Userid</label><br>
@@ -39,15 +39,15 @@
   <div class="field">
        メッセージ<br>
     <textarea name="message[body]" id="message_body">
-</textarea>
+{{.Body}}</textarea>
   </div>
   <div class="actions">
     <input type="submit" name="commit" value="書き込む" data-disable-with="書き込む" />
   </div>
 </form>
 
+<a href="/taka2/messages/{{.Id}}">Show</a> |
 <a href="/taka2/messages">Back</a>
-
 
 </body>
 </html>

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -20,6 +21,7 @@ type Messages struct {
 	Userid     int          `db:"userid"`
 	Body       string       `db:"body"`
 	Created_at dbr.NullTime `db:"created_at"`
+	Updated_at dbr.NullTime `db:"updated_at"`
 }
 
 var (
@@ -52,6 +54,7 @@ func main() {
 		"mul": func(a, b int) int { return a * b },
 		"div": func(a, b int) int { return a / b },
 		"mod": func(a, b int) int { return a % b },
+		"br":  func(a string) string { return strings.Replace(a, "\n", "<br/>", -1) },
 	}
 
 	t := &Template{
@@ -62,10 +65,13 @@ func main() {
 	e.GET("/taka2/sessions/new", SessionsNew)
 	e.POST("/taka2/sessions", createSessions)
 	e.GET("/taka2/messages", MessagesIndex)
+	e.GET("/taka2/messages/", MessagesIndex)
 	e.GET("/taka2/messages/new", MessagesNew)
 	e.POST("/taka2/messages", MessagesCreate)
 	e.GET("/taka2/messages/:id", MessagesShow)
 	e.GET("/taka2/messages/:id/delete", MessagesDestroy)
+	e.GET("/taka2/messages/:id/edit", MessagesEdit)
+	e.POST("/taka2/messages/:id", MessagesUpdate)
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
@@ -164,8 +170,11 @@ func MessagesCreate(c echo.Context) error {
 }
 
 func MessagesShow(c echo.Context) error {
-	fmt.Fprint(os.Stdout, "Show")
-	return c.Render(http.StatusOK, "messages_new", "World")
+	var m []Messages
+	sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
+	var mm Messages
+	mm = m[0]
+	return c.Render(http.StatusOK, "messages_show", mm)
 }
 
 func MessagesDestroy(c echo.Context) error {
@@ -174,4 +183,33 @@ func MessagesDestroy(c echo.Context) error {
 		Where("id = ?", c.Param("id")).
 		Exec()
 	return c.Render(http.StatusOK, "messages_new", "World")
+}
+
+func MessagesEdit(c echo.Context) error {
+	//sess.DeleteFrom("messages").
+	//	Where("id = ?", c.Param("id")).
+	//	Exec()
+	var m []Messages
+	sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
+	var mm Messages
+	mm = m[0]
+	return c.Render(http.StatusOK, "messages_edit", mm)
+}
+
+func MessagesUpdate(c echo.Context) error {
+	result, err := sess.Update("messages").
+		Set("body", c.FormValue("message[body]")).
+		Set("updated_at", time.Now()).
+		Where("id = ?", c.Param("id")).
+		Exec()
+
+	var count int64 = 1
+	if err != nil {
+		//log.Fatal(err)
+	} else {
+		count, _ = result.RowsAffected()
+		//fmt.Println(count) // => 1
+	}
+	count = count + 1
+	return c.Redirect(302, "/taka2/messages/"+c.Param("id"))
 }
