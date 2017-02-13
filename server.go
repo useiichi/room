@@ -56,6 +56,7 @@ func main() {
 		"mod": func(a, b int) int { return a % b },
 		"br":  func(a string) string { return strings.Replace(a, "\n", "<br/>", -1) },
 		"dt":  func(a dbr.NullTime) string { return a.Time.Format("2006年01月02日, 15:04:05") },
+		"len": func(a []int) int { return len(a) },
 	}
 
 	t := &Template{
@@ -174,6 +175,7 @@ func createSessions(c echo.Context) error {
 }
 
 func MessagesIndex(c echo.Context) error {
+	const numPerPage = 10
 	session := session.Default(c)
 	var her_id, my_id int
 	if session.Get("user_id").(int)%2 == 1 {
@@ -183,13 +185,36 @@ func MessagesIndex(c echo.Context) error {
 		her_id = session.Get("user_id").(int) - 1
 		my_id = session.Get("user_id").(int)
 	}
+
+	var co int
+	sess.Select("count(id)").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).Load(&co)
+	var max_page int
+	max_page = co / numPerPage
+	if co%numPerPage != 0 {
+		max_page += 1
+	}
+	pages := make([]int, max_page)
+	for i := 0; i < max_page; i++ {
+		pages[i] = i + 1
+	}
+
 	var m []Messages
-	sess.Select("*").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).OrderBy("id desc").Load(&m)
+	var page int
+	if c.QueryParam("page") == "" || c.QueryParam("page") == "1" {
+		page = 1
+		sess.SelectBySql("SELECT * FROM messages WHERE userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, numPerPage).Load(&m)
+	} else {
+		page, _ = strconv.Atoi(c.QueryParam("page"))
+		sess.SelectBySql("SELECT * FROM messages join (select min(id) as cutoff from (select id from messages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on messages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Load(&m)
+	}
+	//sess.Select("*").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).OrderBy("id desc").Load(&m)
 
 	return c.Render(http.StatusOK, "messages_index", struct {
 		Session_user_id int
+		Current_page    int
+		Pages           []int
 		Mmm             []Messages
-	}{session.Get("user_id").(int), m})
+	}{session.Get("user_id").(int), page, pages, m})
 }
 
 func MessagesNew(c echo.Context) error {

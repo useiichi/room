@@ -50,34 +50,37 @@
 {{end}}
 </table>
 
-  <nav class="pagination">
     
-    
-        <span class="page current">
-  1
+{{$top := .}}
+
+{{if eq .Current_page 1}}
+{{else}}
+    <span class="first">
+  <a href="/taka2/?page=1">&laquo; First</a>
 </span>
 
-        <span class="page">
-  <a rel="next" href="/taka/?page=2">2</a>
+    <span class="prev">
+  <a rel="prev" href="/taka2/?page={{sub .Current_page 1}}">&lsaquo; Prev</a>
 </span>
-
-        <span class="page">
-  <a href="/taka/?page=3">3</a>
-</span>
-
-        <span class="page">
-  <a href="/taka/?page=4">4</a>
-</span>
-
+{{end}}
+{{range .Pages}}
+{{if eq . $top.Current_page}}
+{{.}}
+{{else}}
+<a href="/taka2/?page={{.}}">{{.}}</a>
+{{end}}
+{{end}}
+{{if eq .Current_page (len .Pages)}}
+{{else}}
     <span class="next">
-  <a rel="next" href="/taka/?page=2">Next &rsaquo;</a>
+  <a rel="next" href="/taka2/?page={{add .Current_page 1}}">Next &rsaquo;</a>
 </span>
 
     <span class="last">
-  <a href="/taka/?page=4">Last &raquo;</a>
+  <a href="/taka2/?page={{len .Pages}}">Last &raquo;</a>
 </span>
+{{end}}
 
-  </nav>
 
 <br />
 
