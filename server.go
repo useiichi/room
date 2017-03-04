@@ -81,6 +81,7 @@ func main() {
 		}
 	}
 
+	// sessions/ など追加
 	e.GET("/taka2/sessions/new", SessionsNew)
 	e.GET("/taka2/sessions/new/", SessionsNew)
 	e.GET("/taka2/sessions", SessionsNew)
