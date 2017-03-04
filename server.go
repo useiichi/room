@@ -82,6 +82,9 @@ func main() {
 	}
 
 	e.GET("/taka2/sessions/new", SessionsNew)
+	e.GET("/taka2/sessions/new/", SessionsNew)
+	e.GET("/taka2/sessions", SessionsNew)
+	e.GET("/taka2/sessions/", SessionsNew)
 	e.POST("/taka2/sessions", createSessions)
 	e.GET("/taka2/sessions/:id/delete", SessionsDestroy, track)
 	e.GET("/taka2", MessagesIndex, track)
