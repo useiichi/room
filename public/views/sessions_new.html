@@ -1,14 +1,20 @@
 {{define "sessions_new"}}
 {{template "header.html" .}}
 
-<h1>Log in</h1>  
+<div class="container">
+
+<div class="mt-3">
+<h2>Log in</h2>
+</div>
   
-<form action="/taka2/sessions" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="qxvLSlsCddhKpqYVKlGh+zMxyGLa/STft1kPcyn1wPNC7+JspE4QI+o/Jz24kp6vRDv0fYs8TdjfUWIFAK0+2Q==" />  
-  <div class="field">  
-    <label for="password">Password</label>  
-    <input type="password" name="password" id="password" />  
+<form class="form-group" action="/taka2/sessions" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="qxvLSlsCddhKpqYVKlGh+zMxyGLa/STft1kPcyn1wPNC7+JspE4QI+o/Jz24kp6vRDv0fYs8TdjfUWIFAK0+2Q==" />  
+  <div class="form-group row">
+    <label for="password" class="col-1 col-form-label">Password</label>
+    <div class="col-11">
+    <input class="form-control" type="password" name="password" id="password" />
+    </div>
   </div>  
   <p>パスワードはあなたの名前です。</p>
-  <div class="actions"><input type="submit" name="commit" value="Log in" data-disable-with="Log in" /></div>  
+  <button class="btn btn-primary" type="submit">Log in</button>
 </form>
 {{end}}

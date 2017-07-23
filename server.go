@@ -31,6 +31,7 @@ var (
 
 func main() {
 	e := echo.New()
+	e.Static("/taka2/assets", "assets")
 
 	store := session.NewCookieStore([]byte("secret"))
 	e.Use(session.Sessions("GSESSION", store))

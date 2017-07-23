@@ -1,22 +1,25 @@
 {{define "messages_show"}}
 {{template "header.html" .}}
 
-<p id="notice"></p>
+<div class="container">
 
 <!--p>
   <strong>Userid:</strong>
   2
 </p-->
 
-<p>
-  <strong>メッセージ:</strong>
-  <p>{{.Mmm.Body | html | br}}</p>
-</p>
+  <div class="mt-3 form-group">
+    <h4>メッセージ:</h4>
+    <div class="card">
+      <div class="card-block text-nowrap">{{.Mmm.Body | html | br}}</div>
+    </div>
+  </div>
 
 <a href="/taka2/messages/{{.Mmm.Id}}/edit">Edit</a> |
 <a href="/taka2/messages">Back</a>
 
 
-</body>
-</html>
+</div>
+
+{{template "footer.html" .}}
 {{end}}
