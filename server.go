@@ -2,6 +2,7 @@ package main
 
 import (
 	//"fmt"
+	"fmt"
 	"html/template"
 	"io"
 	"net/http"
@@ -99,6 +100,11 @@ func main() {
 	e.GET("/taka2/messages/:id/delete", MessagesDestroy, track)
 	e.GET("/taka2/messages/:id/edit", MessagesEdit, track)
 	e.POST("/taka2/messages/:id", MessagesUpdate, track)
+
+	e.HTTPErrorHandler = func(err error, c echo.Context) {
+		fmt.Println(err)                                    // 標準出力へ
+		c.JSON(http.StatusInternalServerError, err.Error()) // ブラウザ画面へ
+	}
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
