@@ -25,7 +25,7 @@ type Messages struct {
 }
 
 var (
-	conn, _ = dbr.Open("mysql", "uuu:oohana@tcp(wordpress-mysql.default.svc.cluster.local:3306)/taka", nil)
+	conn, _ = dbr.Open("mysql", "uuu:oohana@tcp(mariadb-svc.default.svc.cluster.local:3306)/taka", nil)
 	sess    = conn.NewSession(nil)
 )
 
