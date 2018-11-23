@@ -11,19 +11,29 @@ import (
 	"strings"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gocraft/dbr"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
-	"github.com/ipfans/echo-session"
 	"github.com/labstack/echo"
 )
 
-type Message struct {
-    ID      int `gorm:"primary_key"`
-    Userid  int
-    Body    string
-    CreatedAt time.Time
-    UpdatedAt time.Time
+type Messages struct {
+	Id         int          `db:"id"`
+	Userid     int          `db:"userid"`
+	Body       string       `db:"body"`
+	Created_at dbr.NullTime `db:"created_at"`
+	Updated_at dbr.NullTime `db:"updated_at"`
+}
+
+type Message2 struct {
+	ID        int `gorm:"primary_key"`
+	Userid    int
+	Body      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 var (
@@ -33,6 +43,15 @@ var (
 
 func main() {
 	e := echo.New()
+
+	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
+	db, err := gorm.Open("postgres", addr)
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	defer db.Close()
+	db.AutoMigrate(&Message{})
+
 	e.Static("/taka2/assets", "assets")
 
 	store := session.NewCookieStore([]byte("secret"))
@@ -198,8 +217,18 @@ func MessagesIndex(c echo.Context) error {
 		my_id = session.Get("user_id").(int)
 	}
 
+	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
+	db, err := gorm.Open("postgres", addr)
+	if err != nil {
+		c.Echo().Logger.Fatal(err)
+	}
+	defer db.Close()
+
 	var co int
-	sess.Select("count(id)").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).Load(&co)
+	//sess.Select("count(id)").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).Load(&co)
+	db.Model(&Message2{}).Where("userid = ?", her_id).Or("userid = ?", my_id).Count(&co)
+	c.Echo().Logger.Debug("count=" + co)
+	//// SELECT count(*) FROM users WHERE name = 'jinzhu'; (count)
 	var max_page int
 	max_page = co / numPerPage
 	if co%numPerPage != 0 {
