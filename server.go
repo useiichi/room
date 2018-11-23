@@ -28,7 +28,7 @@ type Messages struct {
 }
 
 type Missage struct {
-	ID        int `gorm:"primary_key"`
+	Id        int `gorm:"primary_key"`
 	Userid    int
 	Body      string
 	CreatedAt time.Time
@@ -223,7 +223,7 @@ func MessagesIndex(c echo.Context) error {
 	}
 	defer db.Close()
 
-	db.Create(&Missage{ID: 1, Userid: 1, Body: "aaa"})
+	db.Create(&Missage{Id: 1, Userid: 1, Body: "aaa"})
 
 	var co int
 	//sess.Select("count(id)").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).Load(&co)
