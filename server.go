@@ -226,7 +226,7 @@ func MessagesIndex(c echo.Context) error {
 	var co int
 	//sess.Select("count(id)").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).Load(&co)
 	db.Model(&Missage{}).Where("userid = ?", her_id).Or("userid = ?", my_id).Count(&co)
-	c.Echo().Logger.Debug("count=" + strconv.Itoa(co)
+	c.Echo().Logger.Debug("count=" + strconv.Itoa(co))
 	//// SELECT count(*) FROM users WHERE name = 'jinzhu'; (count)
 	var max_page int
 	max_page = co / numPerPage
