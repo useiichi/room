@@ -223,6 +223,8 @@ func MessagesIndex(c echo.Context) error {
 	}
 	defer db.Close()
 
+	db.Create(&Missage{ID: 1, Userid: 1, Body: "aaa"})
+
 	var co int
 	//sess.Select("count(id)").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).Load(&co)
 	db.Model(&Missage{}).Where("userid = ?", her_id).Or("userid = ?", my_id).Count(&co)
@@ -238,11 +240,12 @@ func MessagesIndex(c echo.Context) error {
 		pages[i] = i + 1
 	}
 
-	var m []Messages
+	var m []Missage
 	var page int
 	if c.QueryParam("page") == "" || c.QueryParam("page") == "1" {
 		page = 1
-		sess.SelectBySql("SELECT * FROM messages WHERE userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, numPerPage).Load(&m)
+		//sess.SelectBySql("SELECT * FROM messages WHERE userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, numPerPage).Load(&m)
+		db.Limit(numPerPage).Where("userid = ? OR userid = ?", her_id, my_id).Find(&m)
 	} else {
 		page, _ = strconv.Atoi(c.QueryParam("page"))
 		sess.SelectBySql("SELECT * FROM messages join (select min(id) as cutoff from (select id from messages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on messages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Load(&m)
