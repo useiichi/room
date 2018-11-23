@@ -256,7 +256,7 @@ func MessagesIndex(c echo.Context) error {
 		Session_user_id int
 		Current_page    int
 		Pages           []int
-		Mmm             []Messages
+		Mmm             []Missage
 	}{session.Get("user_id").(int), page, pages, m})
 }
 
@@ -288,13 +288,20 @@ func MessagesCreate(c echo.Context) error {
 }
 
 func MessagesShow(c echo.Context) error {
+	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
+	db, err := gorm.Open("postgres", addr)
+	if err != nil {
+		c.Echo().Logger.Fatal(err)
+	}
+	defer db.Close()
+
 	session := session.Default(c)
 	//sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
 	var mm Missage
 	db.Where("id = ?", c.Param("id")).First(&mm)
 	return c.Render(http.StatusOK, "messages_show", struct {
 		Session_user_id int
-		Mmm             Messages
+		Mmm             Missage
 	}{session.Get("user_id").(int), mm})
 }
 
