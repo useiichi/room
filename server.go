@@ -13,10 +13,9 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gocraft/dbr"
-
+	"github.com/ipfans/echo-session"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-
 	"github.com/labstack/echo"
 )
 
@@ -28,7 +27,7 @@ type Messages struct {
 	Updated_at dbr.NullTime `db:"updated_at"`
 }
 
-type Message2 struct {
+type Missage struct {
 	ID        int `gorm:"primary_key"`
 	Userid    int
 	Body      string
@@ -50,7 +49,7 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 	defer db.Close()
-	db.AutoMigrate(&Message{})
+	db.AutoMigrate(&Missage{})
 
 	e.Static("/taka2/assets", "assets")
 
@@ -226,7 +225,7 @@ func MessagesIndex(c echo.Context) error {
 
 	var co int
 	//sess.Select("count(id)").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).Load(&co)
-	db.Model(&Message2{}).Where("userid = ?", her_id).Or("userid = ?", my_id).Count(&co)
+	db.Model(&Missage{}).Where("userid = ?", her_id).Or("userid = ?", my_id).Count(&co)
 	c.Echo().Logger.Debug("count=" + co)
 	//// SELECT count(*) FROM users WHERE name = 'jinzhu'; (count)
 	var max_page int
