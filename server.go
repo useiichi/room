@@ -76,7 +76,7 @@ func main() {
 		"div": func(a, b int) int { return a / b },
 		"mod": func(a, b int) int { return a % b },
 		"br":  func(a string) string { return strings.Replace(a, "\n", "<br/>", -1) },
-		"dt":  func(a dbr.NullTime) string { return a.Time.Format("2006年01月02日, 15:04:05") },
+		"dt":  func(a time.Time) string { return a.Format("2006年01月02日, 15:04:05") },
 		"len": func(a []int) int { return len(a) },
 	}
 
