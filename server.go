@@ -11,18 +11,19 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gocraft/dbr"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+
 	"github.com/ipfans/echo-session"
 	"github.com/labstack/echo"
 )
 
-type Messages struct {
-	Id         int          `db:"id"`
-	Userid     int          `db:"userid"`
-	Body       string       `db:"body"`
-	Created_at dbr.NullTime `db:"created_at"`
-	Updated_at dbr.NullTime `db:"updated_at"`
+type Message struct {
+    ID      int `gorm:"primary_key"`
+    Userid  int
+    Body    string
+    CreatedAt time.Time
+    UpdatedAt time.Time
 }
 
 var (
