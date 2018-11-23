@@ -40,7 +40,7 @@
     	{{.Body | br}}
     </td>
 	    {{end}}
-    <td style="vertical-align: top"><p>{{.Updated_at | dt}}</p></td>
+    <td style="vertical-align: top"><p>{{.UpdatedAt | dt}}</p></td>
     <!--td style="vertical-align: top"><p><%= link_to 'Show', message %></td-->
     {{if eq .Userid $se_id}}
     <td style="vertical-align: top" nowrap><p><a href="/taka2/messages/{{.Id}}/edit">編集</a></p></td>
