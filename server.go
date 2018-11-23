@@ -289,10 +289,9 @@ func MessagesCreate(c echo.Context) error {
 
 func MessagesShow(c echo.Context) error {
 	session := session.Default(c)
-	var m []Messages
-	sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
-	var mm Messages
-	mm = m[0]
+	//sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
+	var mm Missage
+	db.Where("id = ?", c.Param("id")).First(&mm)
 	return c.Render(http.StatusOK, "messages_show", struct {
 		Session_user_id int
 		Mmm             Messages
