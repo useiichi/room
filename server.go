@@ -27,8 +27,9 @@ type Messages struct {
 	Updated_at dbr.NullTime `db:"updated_at"`
 }
 
+// ALTER TABLE missages ALTER COLUMN id SET DEFAULT nextval('messages_seq');
 type Missage struct {
-	Id        int `gorm:"primary_key"`
+	Id        int `gorm:"primary_key"` //`gorm:"primary_key;DEFAULT:nextval('messages_seq')"`
 	Userid    int
 	Body      string
 	CreatedAt time.Time
@@ -249,7 +250,11 @@ func MessagesIndex(c echo.Context) error {
 	} else {
 		page, _ = strconv.Atoi(c.QueryParam("page"))
 		//sess.SelectBySql("SELECT * FROM messages join (select min(id) as cutoff from (select id from messages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on messages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Load(&m)
-		db.Raw("SELECT * FROM missages join (select min(id) as cutoff from (select id from missages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on missages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Scan(&m)
+
+		//↓ mysql?
+		//db.Raw("SELECT * FROM missages join (select min(id) as cutoff from (select id from missages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on missages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Scan(&m)
+		//↓ postgresql?
+		db.Raw("SELECT * FROM missages join (select min(id) as cutoff from (select id from missages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on missages.id < minid.cutoff where userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Scan(&m)
 	}
 	//sess.Select("*").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).OrderBy("id desc").Load(&m)
 
