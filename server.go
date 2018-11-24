@@ -1,7 +1,6 @@
 package main
 
 import (
-	//"fmt"
 	"fmt"
 	"html/template"
 	"io"
@@ -27,6 +26,8 @@ type Messages struct {
 	Updated_at dbr.NullTime `db:"updated_at"`
 }
 
+// CREATE SEQUENCE messages_seq;
+// show create messages_seq;
 // ALTER TABLE missages ALTER COLUMN id SET DEFAULT nextval('messages_seq');
 type Missage struct {
 	Id        int `gorm:"primary_key"` //`gorm:"primary_key;DEFAULT:nextval('messages_seq')"`
@@ -37,15 +38,20 @@ type Missage struct {
 }
 
 var (
-	conn, _ = dbr.Open("mysql", "uuu:oohana@tcp(proxysql-svc.default.svc.cluster.local:6033)/taka", nil)
-	sess    = conn.NewSession(nil)
+	addr string
 )
 
 func main() {
 	e := echo.New()
 
-	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
-	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
+	name, err := os.Hostname()
+	fmt.Printf("Hostname: %s\n", name)
+	if name == "upc" {
+		addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	} else {
+		addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
+	}
+
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		e.Logger.Fatal(err)
@@ -218,8 +224,6 @@ func MessagesIndex(c echo.Context) error {
 		my_id = session.Get("user_id").(int)
 	}
 
-	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
-	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
@@ -274,8 +278,6 @@ func MessagesNew(c echo.Context) error {
 }
 
 func MessagesCreate(c echo.Context) error {
-	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
-	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
@@ -304,8 +306,6 @@ func MessagesCreate(c echo.Context) error {
 }
 
 func MessagesShow(c echo.Context) error {
-	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
-	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
@@ -323,8 +323,6 @@ func MessagesShow(c echo.Context) error {
 }
 
 func MessagesDestroy(c echo.Context) error {
-	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
-	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
@@ -340,8 +338,6 @@ func MessagesDestroy(c echo.Context) error {
 }
 
 func MessagesEdit(c echo.Context) error {
-	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
-	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
@@ -360,8 +356,6 @@ func MessagesEdit(c echo.Context) error {
 }
 
 func MessagesUpdate(c echo.Context) error {
-	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
-	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
