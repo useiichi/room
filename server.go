@@ -43,7 +43,8 @@ var (
 func main() {
 	e := echo.New()
 
-	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		e.Logger.Fatal(err)
@@ -216,7 +217,8 @@ func MessagesIndex(c echo.Context) error {
 		my_id = session.Get("user_id").(int)
 	}
 
-	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
@@ -266,7 +268,8 @@ func MessagesNew(c echo.Context) error {
 }
 
 func MessagesCreate(c echo.Context) error {
-	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
@@ -295,7 +298,8 @@ func MessagesCreate(c echo.Context) error {
 }
 
 func MessagesShow(c echo.Context) error {
-	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
@@ -313,7 +317,8 @@ func MessagesShow(c echo.Context) error {
 }
 
 func MessagesDestroy(c echo.Context) error {
-	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
@@ -329,7 +334,8 @@ func MessagesDestroy(c echo.Context) error {
 }
 
 func MessagesEdit(c echo.Context) error {
-	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
@@ -348,7 +354,8 @@ func MessagesEdit(c echo.Context) error {
 }
 
 func MessagesUpdate(c echo.Context) error {
-	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	//const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
