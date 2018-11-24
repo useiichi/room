@@ -1,5 +1,7 @@
 スタート：
 gin
+↓？
+C:\gocode\bin\gin.exe
 
 
 

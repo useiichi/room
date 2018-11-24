@@ -43,7 +43,7 @@ var (
 func main() {
 	e := echo.New()
 
-	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
+	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		e.Logger.Fatal(err)
@@ -216,14 +216,12 @@ func MessagesIndex(c echo.Context) error {
 		my_id = session.Get("user_id").(int)
 	}
 
-	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
+	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
 	}
 	defer db.Close()
-
-	db.Create(&Missage{Id: 1, Userid: 1, Body: "aaa"})
 
 	var co int
 	//sess.Select("count(id)").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).Load(&co)
@@ -268,11 +266,20 @@ func MessagesNew(c echo.Context) error {
 }
 
 func MessagesCreate(c echo.Context) error {
+	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	db, err := gorm.Open("postgres", addr)
+	if err != nil {
+		c.Echo().Logger.Fatal(err)
+	}
+	defer db.Close()
+
 	session := session.Default(c)
-	result, err := sess.InsertInto("messages").
-		Columns("userid", "body", "created_at", "updated_at").
-		Values(session.Get("user_id").(int), c.FormValue("message[body]"), time.Now(), time.Now()).
-		Exec()
+	//result, err := sess.InsertInto("messages").
+	//	Columns("userid", "body", "created_at", "updated_at").
+	//	Values(session.Get("user_id").(int), c.FormValue("message[body]"), time.Now(), time.Now()).
+	//	Exec()
+	m := Missage{Userid: session.Get("user_id").(int), Body: c.FormValue("message[body]"), CreatedAt: time.Now(), UpdatedAt: time.Now()}
+	db.Create(&m)
 
 	//var count int64
 	var lii int64
@@ -281,14 +288,14 @@ func MessagesCreate(c echo.Context) error {
 		//count = 1
 	} else {
 		//count, _ = result.RowsAffected()
-		lii, _ = result.LastInsertId()
+		lii = int64(m.Id)
 		//fmt.Println(count) // => 1
 	}
 	return c.Redirect(302, "/taka2/messages/"+strconv.FormatInt(lii, 10))
 }
 
 func MessagesShow(c echo.Context) error {
-	const addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
+	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
 	db, err := gorm.Open("postgres", addr)
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
@@ -306,36 +313,65 @@ func MessagesShow(c echo.Context) error {
 }
 
 func MessagesDestroy(c echo.Context) error {
-	sess.DeleteFrom("messages").
-		Where("id = ?", c.Param("id")).
-		Exec()
+	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	db, err := gorm.Open("postgres", addr)
+	if err != nil {
+		c.Echo().Logger.Fatal(err)
+	}
+	defer db.Close()
+
+	//sess.DeleteFrom("messages").
+	//	Where("id = ?", c.Param("id")).
+	//	Exec()
+	db.Where("id = ?", c.Param("id")).Delete(&Missage{})
+
 	return c.Redirect(302, "/taka2/messages/")
 }
 
 func MessagesEdit(c echo.Context) error {
+	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	db, err := gorm.Open("postgres", addr)
+	if err != nil {
+		c.Echo().Logger.Fatal(err)
+	}
+	defer db.Close()
+
 	session := session.Default(c)
-	var m []Messages
-	sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
-	var mm Messages
-	mm = m[0]
+	//var m []Messages
+	//sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
+	var mm Missage
+	db.Where("id = ?", c.Param("id")).First(&mm)
 	return c.Render(http.StatusOK, "messages_edit", struct {
 		Session_user_id int
-		Mmm             Messages
+		Mmm             Missage
 	}{session.Get("user_id").(int), mm})
 }
 
 func MessagesUpdate(c echo.Context) error {
-	result, err := sess.Update("messages").
-		Set("body", c.FormValue("message[body]")).
-		Set("updated_at", time.Now()).
-		Where("id = ?", c.Param("id")).
-		Exec()
+	const addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+	db, err := gorm.Open("postgres", addr)
+	if err != nil {
+		c.Echo().Logger.Fatal(err)
+	}
+	defer db.Close()
+
+	//result, err := sess.Update("messages").
+	//	Set("body", c.FormValue("message[body]")).
+	//	Set("updated_at", time.Now()).
+	//	Where("id = ?", c.Param("id")).
+	//	Exec()
+
+	var mm Missage
+	db.Where("id = ?", c.Param("id")).First(&mm)
+	mm.Body = c.FormValue("message[body]")
+	mm.UpdatedAt = time.Now()
+	db.Save(&mm)
 
 	var count int64 = 1
 	if err != nil {
 		//log.Fatal(err)
 	} else {
-		count, _ = result.RowsAffected()
+		//count, _ = result.RowsAffected()
 		//fmt.Println(count) // => 1
 	}
 	count = count + 1
