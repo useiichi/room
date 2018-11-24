@@ -184,7 +184,7 @@ func createSessions(c echo.Context) error {
 	session := session.Default(c)
 
 	password := c.FormValue("password")
-	if password == "sss" {
+	if password == "lamu" || password == "ramu" {
 		session.Set("user_id", 1)
 		session.Save()
 	} else if password == "uuu" {
@@ -245,10 +245,11 @@ func MessagesIndex(c echo.Context) error {
 	if c.QueryParam("page") == "" || c.QueryParam("page") == "1" {
 		page = 1
 		//sess.SelectBySql("SELECT * FROM messages WHERE userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, numPerPage).Load(&m)
-		db.Limit(numPerPage).Where("userid = ? OR userid = ?", her_id, my_id).Find(&m)
+		db.Order("id desc").Limit(numPerPage).Where("userid = ? OR userid = ?", her_id, my_id).Find(&m)
 	} else {
 		page, _ = strconv.Atoi(c.QueryParam("page"))
-		sess.SelectBySql("SELECT * FROM messages join (select min(id) as cutoff from (select id from messages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on messages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Load(&m)
+		//sess.SelectBySql("SELECT * FROM messages join (select min(id) as cutoff from (select id from messages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on messages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Load(&m)
+		db.Raw("SELECT * FROM missages join (select min(id) as cutoff from (select id from missages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on missages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Scan(&m)
 	}
 	//sess.Select("*").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).OrderBy("id desc").Load(&m)
 
