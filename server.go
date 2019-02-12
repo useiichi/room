@@ -192,7 +192,7 @@ func createSessions(c echo.Context) error {
 	session := session.Default(c)
 
 	password := c.FormValue("password")
-	if password == "lamu" || password == "ramu" {
+	if password == "umika" || password == "umica" {
 		session.Set("user_id", 1)
 		session.Save()
 	} else if password == "uuu" {
