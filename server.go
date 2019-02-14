@@ -127,7 +127,7 @@ func main() {
 	e.GET("/taka2/messages/:id/delete", MessagesDestroy, track)
 	e.GET("/taka2/messages/:id/edit", MessagesEdit, track)
 	e.POST("/taka2/messages/:id", MessagesUpdate, track)
-	e.GET("/taka2/suusiki", Suusiki, track)
+	e.GET("/taka2/suusiki", Suusiki)
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		fmt.Println(err)                                    // 標準出力へ
