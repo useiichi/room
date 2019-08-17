@@ -26,6 +26,19 @@ type Messages struct {
 	Updated_at dbr.NullTime `db:"updated_at"`
 }
 
+// CREATE TABLE messages (
+// 	 id INT NOT NULL,
+// 	 userid INT NULL,
+// 	 body STRING NULL,
+//	 created_at TIMESTAMP NULL,
+//	 updated_at TIMESTAMP NULL,
+//	 CONSTRAINT "primary" PRIMARY KEY (id ASC),
+//	 FAMILY "primary" (id, userid, body, created_at, updated_at)
+//	 );
+//
+// CREATE USER uuu WITH PASSWORD 'oohana';
+//
+//
 // CREATE SEQUENCE messages_seq;
 // show create messages_seq;
 // ALTER TABLE missages ALTER COLUMN id SET DEFAULT nextval('messages_seq');
