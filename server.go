@@ -26,7 +26,7 @@ type Messages struct {
 	Updated_at dbr.NullTime `db:"updated_at"`
 }
 
-// CREATE TABLE messages (
+// CREATE TABLE missages (
 // 	 id INT NOT NULL,
 // 	 userid INT NULL,
 // 	 body STRING NULL,
@@ -37,11 +37,15 @@ type Messages struct {
 //	 );
 //
 // CREATE USER uuu WITH PASSWORD 'oohana';
+// select * from pg_user;
+// GRANT ALL ON DATABASE taka TO uuu;
+// SHOW GRANTS ON DATABASE taka;
+// GRANT ALL ON TABLE taka.* TO uuu;
+// SHOW GRANTS ON TABLE taka.*;
 //
-//
-// CREATE SEQUENCE messages_seq;
-// show create messages_seq;
-// ALTER TABLE missages ALTER COLUMN id SET DEFAULT nextval('messages_seq');
+// CREATE SEQUENCE missages_seq;
+// show create missages_seq;
+// ALTER TABLE missages ALTER COLUMN id SET DEFAULT nextval('missages_seq');
 type Missage struct {
 	Id        int `gorm:"primary_key"` //`gorm:"primary_key;DEFAULT:nextval('messages_seq')"`
 	Userid    int
