@@ -1,3 +1,61 @@
+// 実行方法
+// まず、
+// C:\gocode\src\github.com\useiichi\room> go build
+//
+// 直で実行：
+// C:\gocode\src\github.com\useiichi\room> go run server.go
+// http://localhost:1323/taka2 にアクセス
+//
+// Realizeで実行：
+// go get -u github.com/oxequa/realize
+// C:\gocode\src\github.com\useiichi\room> realize start
+// ctl+C
+// .realize.yaml
+// schema:
+// - name: realize-sample
+//   path: .
+//   # 修正ここから
+//   commands: 
+//     run:
+//       status: true
+//   # 修正ここまで
+//   watcher:
+//     paths:
+//     - /
+// 再度、
+// C:\gocode\src\github.com\useiichi\room> realize start --server
+//
+// ginで実行（ホットリロード（LiveReload））：
+// C:\gocode\src\github.com\useiichi\room> gin
+// http://localhost:3000/taka2 にアクセス
+// ※ gin のインストール方法：
+// go get github.com/codegangsta/gin
+// ※ cockroackdbのnodePort: 26257を開けておく必要あり。↓
+//---
+//apiVersion: v1
+//kind: Service
+//metadata:
+//  # This service is meant to be used by clients of the database. It exposes a ClusterIP that will
+//  # automatically load balance connections to the different database pods.
+//  name: cockroachdb-public
+//  labels:
+//    app: cockroachdb
+//spec:
+//  ports:
+//  # The main port, served by gRPC, serves Postgres-flavor SQL, internode
+//  # traffic and the cli.
+//  - port: 26257
+//    nodePort: 26257 ←←←☆☆☆☆☆☆
+//    targetPort: 26257
+//    name: grpc
+//  # The secondary port serves the UI as well as health and debug endpoints.
+//  - port: 8080
+//    targetPort: 8080
+//    name: http
+//  selector:
+//    app: cockroachdb
+//  type: NodePort ←←←☆☆☆☆☆☆
+//---
 package main
 
 import (
@@ -12,10 +70,11 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gocraft/dbr"
-	"github.com/ipfans/echo-session"
-	"github.com/jinzhu/gorm"
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
+	  "github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 type Messages struct {
@@ -64,7 +123,7 @@ func main() {
 	name, err := os.Hostname()
 	fmt.Printf("Hostname: %s\n", name)
 	if name == "upc" {
-		addr = "postgresql://uuu:oohana@mail.iseisaku.com:26257/taka"
+		addr = "postgresql://uuu:oohana@35.185.194.40:26257/taka"
 	} else {
 		addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	}
@@ -78,8 +137,7 @@ func main() {
 
 	e.Static("/taka2/assets", "assets")
 
-	store := session.NewCookieStore([]byte("secret"))
-	e.Use(session.Sessions("GSESSION", store))
+	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
@@ -113,12 +171,17 @@ func main() {
 	// Route level middleware
 	track := func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			session := session.Default(c)
+			sess, _ := session.Get("session", c)
+			sess.Options = &sessions.Options{
+				Path:     "/",
+				MaxAge:   86400 * 7,
+				HttpOnly: true,
+			}
 			var s int
-			if session.Get("user_id") == nil {
+			if sess.Values["user_id"] == nil {
 				s = 0
 			} else {
-				s = session.Get("user_id").(int)
+				s = sess.Values["user_id"].(int)
 			}
 			if s == 0 {
 				return c.Redirect(302, "/taka2/sessions/new")
@@ -193,12 +256,17 @@ func Hello(c echo.Context) error {
 }
 
 func SessionsNew(c echo.Context) error {
-	session := session.Default(c)
+	sess, _ := session.Get("session", c)
+	sess.Options = &sessions.Options{
+	  Path:     "/",
+	  MaxAge:   86400 * 7,
+	  HttpOnly: true,
+	}
 	var s int
-	if session.Get("user_id") == nil {
+	if sess.Values["user_id"] == nil {
 		s = 0
 	} else {
-		s = session.Get("user_id").(int)
+		s = sess.Values["user_id"].(int)
 	}
 	return c.Render(http.StatusOK, "sessions_new", struct {
 		Session_user_id int
@@ -206,21 +274,26 @@ func SessionsNew(c echo.Context) error {
 }
 
 func createSessions(c echo.Context) error {
-	session := session.Default(c)
+	sess, _ := session.Get("session", c)
+	sess.Options = &sessions.Options{
+	  Path:     "/",
+	  MaxAge:   86400 * 7,
+	  HttpOnly: true,
+	}
 
 	password := c.FormValue("password")
 	if password == "umika" || password == "umica" {
-		session.Set("user_id", 1)
-		session.Save()
+		sess.Values["user_id"] = 1
+		sess.Save(c.Request(), c.Response())
 	} else if password == "uuu" {
-		session.Set("user_id", 2)
-		session.Save()
+		sess.Values["user_id"] = 2
+		sess.Save(c.Request(), c.Response())
 	} else if password == "aaa" {
-		session.Set("user_id", 3)
-		session.Save()
+		sess.Values["user_id"] = 3
+		sess.Save(c.Request(), c.Response())
 	} else if password == "uuuaaa" {
-		session.Set("user_id", 4)
-		session.Save()
+		sess.Values["user_id"] = 4
+		sess.Save(c.Request(), c.Response())
 	} else {
 		return c.Render(http.StatusOK, "sessions_new", struct {
 			Session_user_id int
@@ -232,14 +305,20 @@ func createSessions(c echo.Context) error {
 
 func MessagesIndex(c echo.Context) error {
 	const numPerPage = 10
-	session := session.Default(c)
+	sess, _ := session.Get("session", c)
+	sess.Options = &sessions.Options{
+	  Path:     "/",
+	  MaxAge:   86400 * 7,
+	  HttpOnly: true,
+	}
+
 	var her_id, my_id int
-	if session.Get("user_id").(int)%2 == 1 {
-		her_id = session.Get("user_id").(int)
-		my_id = session.Get("user_id").(int) + 1
+	if sess.Values["user_id"].(int)%2 == 1 {
+		her_id = sess.Values["user_id"].(int)
+		my_id = sess.Values["user_id"].(int) + 1
 	} else {
-		her_id = session.Get("user_id").(int) - 1
-		my_id = session.Get("user_id").(int)
+		her_id = sess.Values["user_id"].(int) - 1
+		my_id = sess.Values["user_id"].(int)
 	}
 
 	db, err := gorm.Open("postgres", addr)
@@ -285,14 +364,19 @@ func MessagesIndex(c echo.Context) error {
 		Current_page    int
 		Pages           []int
 		Mmm             []Missage
-	}{session.Get("user_id").(int), page, pages, m})
+	}{sess.Values["user_id"].(int), page, pages, m})
 }
 
 func MessagesNew(c echo.Context) error {
-	session := session.Default(c)
+	sess, _ := session.Get("session", c)
+	sess.Options = &sessions.Options{
+	  Path:     "/",
+	  MaxAge:   86400 * 7,
+	  HttpOnly: true,
+	}
 	return c.Render(http.StatusOK, "messages_new", struct {
 		Session_user_id int
-	}{session.Get("user_id").(int)})
+	}{sess.Values["user_id"].(int)})
 }
 
 func MessagesCreate(c echo.Context) error {
@@ -302,12 +386,17 @@ func MessagesCreate(c echo.Context) error {
 	}
 	defer db.Close()
 
-	session := session.Default(c)
+	sess, _ := session.Get("session", c)
+	sess.Options = &sessions.Options{
+	  Path:     "/",
+	  MaxAge:   86400 * 7,
+	  HttpOnly: true,
+	}
 	//result, err := sess.InsertInto("messages").
 	//	Columns("userid", "body", "created_at", "updated_at").
-	//	Values(session.Get("user_id").(int), c.FormValue("message[body]"), time.Now(), time.Now()).
+	//	Values(sess.Values["user_id"].(int), c.FormValue("message[body]"), time.Now(), time.Now()).
 	//	Exec()
-	m := Missage{Userid: session.Get("user_id").(int), Body: c.FormValue("message[body]"), CreatedAt: time.Now(), UpdatedAt: time.Now()}
+	m := Missage{Userid: sess.Values["user_id"].(int), Body: c.FormValue("message[body]"), CreatedAt: time.Now(), UpdatedAt: time.Now()}
 	db.Create(&m)
 
 	//var count int64
@@ -330,14 +419,19 @@ func MessagesShow(c echo.Context) error {
 	}
 	defer db.Close()
 
-	session := session.Default(c)
+	sess, _ := session.Get("session", c)
+	sess.Options = &sessions.Options{
+	  Path:     "/",
+	  MaxAge:   86400 * 7,
+	  HttpOnly: true,
+	}
 	//sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
 	var mm Missage
 	db.Where("id = ?", c.Param("id")).First(&mm)
 	return c.Render(http.StatusOK, "messages_show", struct {
 		Session_user_id int
 		Mmm             Missage
-	}{session.Get("user_id").(int), mm})
+	}{sess.Values["user_id"].(int), mm})
 }
 
 func Suusiki(c echo.Context) error {
@@ -381,7 +475,12 @@ func MessagesEdit(c echo.Context) error {
 	}
 	defer db.Close()
 
-	session := session.Default(c)
+	sess, _ := session.Get("session", c)
+	sess.Options = &sessions.Options{
+	  Path:     "/",
+	  MaxAge:   86400 * 7,
+	  HttpOnly: true,
+	}
 	//var m []Messages
 	//sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
 	var mm Missage
@@ -389,7 +488,7 @@ func MessagesEdit(c echo.Context) error {
 	return c.Render(http.StatusOK, "messages_edit", struct {
 		Session_user_id int
 		Mmm             Missage
-	}{session.Get("user_id").(int), mm})
+	}{sess.Values["user_id"].(int), mm})
 }
 
 func MessagesUpdate(c echo.Context) error {
@@ -423,13 +522,18 @@ func MessagesUpdate(c echo.Context) error {
 }
 
 func SessionsDestroy(c echo.Context) error {
-	session := session.Default(c)
+	sess, _ := session.Get("session", c)
+	sess.Options = &sessions.Options{
+	  Path:     "/",
+	  MaxAge:   86400 * 7,
+	  HttpOnly: true,
+	}
 
-	if id, _ := strconv.Atoi(c.Param("id")); session.Get("user_id").(int) == id {
+	if id, _ := strconv.Atoi(c.Param("id")); sess.Values["user_id"].(int) == id {
 		println("session clear")
 		//session.Set("user_id", 32)
-		session.Clear()
-		session.Save()
+		sess.Values["user_id"] = nil
+		sess.Save(c.Request(), c.Response())
 	}
 	return c.Redirect(302, "/taka2/messages/")
 }
