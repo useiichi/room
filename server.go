@@ -94,6 +94,21 @@ type Messages struct {
 //	 CONSTRAINT "primary" PRIMARY KEY (id ASC),
 //	 FAMILY "primary" (id, userid, body, created_at, updated_at)
 //	 );
+// CREATE SEQUENCE missages_seq;
+// show create missages_seq;
+// ALTER TABLE missages ALTER COLUMN id SET DEFAULT nextval('missages_seq');
+//
+// ↓別のAuto Increment方法（これだと、idが484778898812534786のようになる）
+//
+// CREATE TABLE missages (
+// 	 id SERIAL NOT NULL,
+// 	 userid INT NULL,
+// 	 body STRING NULL,
+//	 created_at TIMESTAMP NULL,
+//	 updated_at TIMESTAMP NULL,
+//	 CONSTRAINT "primary" PRIMARY KEY (id ASC),
+//	 FAMILY "primary" (id, userid, body, created_at, updated_at)
+//	 );
 //
 // CREATE USER uuu WITH PASSWORD 'oohana';
 // select * from pg_user;
@@ -101,10 +116,6 @@ type Messages struct {
 // SHOW GRANTS ON DATABASE taka;
 // GRANT ALL ON TABLE taka.* TO uuu;
 // SHOW GRANTS ON TABLE taka.*;
-//
-// CREATE SEQUENCE missages_seq;
-// show create missages_seq;
-// ALTER TABLE missages ALTER COLUMN id SET DEFAULT nextval('missages_seq');
 type Missage struct {
 	Id        int `gorm:"primary_key"` //`gorm:"primary_key;DEFAULT:nextval('messages_seq')"`
 	Userid    int
