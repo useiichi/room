@@ -299,10 +299,10 @@ func createSessions(c echo.Context) error {
 	} else if password == "uuu" {
 		sess.Values["user_id"] = 2
 		sess.Save(c.Request(), c.Response())
-	} else if password == "aaa" {
+	} else if password == "nagasaki" || password == "nagahashi" {
 		sess.Values["user_id"] = 3
 		sess.Save(c.Request(), c.Response())
-	} else if password == "uuuaaa" {
+	} else if password == "uuunagasaki" {
 		sess.Values["user_id"] = 4
 		sess.Save(c.Request(), c.Response())
 	} else {
