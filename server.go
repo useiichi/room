@@ -15,7 +15,7 @@
 // - name: realize-sample
 //   path: .
 //   # 修正ここから
-//   commands: 
+//   commands:
 //     run:
 //       status: true
 //   # 修正ここまで
@@ -71,9 +71,9 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gocraft/dbr"
 	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
-	  "github.com/jinzhu/gorm"
+	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 )
 
@@ -85,18 +85,27 @@ type Messages struct {
 	Updated_at dbr.NullTime `db:"updated_at"`
 }
 
+// CREATE DATABASE taka;
+// SHOW DATABASES;
+// USE taka;
 // CREATE TABLE missages (
-// 	 id INT NOT NULL,
-// 	 userid INT NULL,
-// 	 body STRING NULL,
-//	 created_at TIMESTAMP NULL,
-//	 updated_at TIMESTAMP NULL,
-//	 CONSTRAINT "primary" PRIMARY KEY (id ASC),
-//	 FAMILY "primary" (id, userid, body, created_at, updated_at)
-//	 );
+// id INT NOT NULL,
+// userid INT NULL,
+// body STRING NULL,
+// created_at TIMESTAMP NULL,
+// updated_at TIMESTAMP NULL,
+// CONSTRAINT "primary" PRIMARY KEY (id ASC),
+// FAMILY "primary" (id, userid, body, created_at, updated_at)
+// );
 // CREATE SEQUENCE missages_seq;
 // show create missages_seq;
 // ALTER TABLE missages ALTER COLUMN id SET DEFAULT nextval('missages_seq');
+// CREATE USER uuu WITH PASSWORD 'oohana';
+// select * from pg_user;
+// GRANT ALL ON DATABASE taka TO uuu;
+// SHOW GRANTS ON DATABASE taka;
+// GRANT ALL ON TABLE taka.* TO uuu;
+// SHOW GRANTS ON TABLE taka.*;
 //
 // ↓別のAuto Increment方法（これだと、idが484778898812534786のようになる）
 //
@@ -109,13 +118,6 @@ type Messages struct {
 //	 CONSTRAINT "primary" PRIMARY KEY (id ASC),
 //	 FAMILY "primary" (id, userid, body, created_at, updated_at)
 //	 );
-//
-// CREATE USER uuu WITH PASSWORD 'oohana';
-// select * from pg_user;
-// GRANT ALL ON DATABASE taka TO uuu;
-// SHOW GRANTS ON DATABASE taka;
-// GRANT ALL ON TABLE taka.* TO uuu;
-// SHOW GRANTS ON TABLE taka.*;
 type Missage struct {
 	Id        int `gorm:"primary_key"` //`gorm:"primary_key;DEFAULT:nextval('messages_seq')"`
 	Userid    int
@@ -269,9 +271,9 @@ func Hello(c echo.Context) error {
 func SessionsNew(c echo.Context) error {
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
-	  Path:     "/",
-	  MaxAge:   86400 * 7,
-	  HttpOnly: true,
+		Path:     "/",
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
 	}
 	var s int
 	if sess.Values["user_id"] == nil {
@@ -287,9 +289,9 @@ func SessionsNew(c echo.Context) error {
 func createSessions(c echo.Context) error {
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
-	  Path:     "/",
-	  MaxAge:   86400 * 7,
-	  HttpOnly: true,
+		Path:     "/",
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
 	}
 
 	password := c.FormValue("password")
@@ -318,9 +320,9 @@ func MessagesIndex(c echo.Context) error {
 	const numPerPage = 10
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
-	  Path:     "/",
-	  MaxAge:   86400 * 7,
-	  HttpOnly: true,
+		Path:     "/",
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
 	}
 
 	var her_id, my_id int
@@ -381,9 +383,9 @@ func MessagesIndex(c echo.Context) error {
 func MessagesNew(c echo.Context) error {
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
-	  Path:     "/",
-	  MaxAge:   86400 * 7,
-	  HttpOnly: true,
+		Path:     "/",
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
 	}
 	return c.Render(http.StatusOK, "messages_new", struct {
 		Session_user_id int
@@ -399,9 +401,9 @@ func MessagesCreate(c echo.Context) error {
 
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
-	  Path:     "/",
-	  MaxAge:   86400 * 7,
-	  HttpOnly: true,
+		Path:     "/",
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
 	}
 	//result, err := sess.InsertInto("messages").
 	//	Columns("userid", "body", "created_at", "updated_at").
@@ -432,9 +434,9 @@ func MessagesShow(c echo.Context) error {
 
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
-	  Path:     "/",
-	  MaxAge:   86400 * 7,
-	  HttpOnly: true,
+		Path:     "/",
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
 	}
 	//sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
 	var mm Missage
@@ -488,9 +490,9 @@ func MessagesEdit(c echo.Context) error {
 
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
-	  Path:     "/",
-	  MaxAge:   86400 * 7,
-	  HttpOnly: true,
+		Path:     "/",
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
 	}
 	//var m []Messages
 	//sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
@@ -535,9 +537,9 @@ func MessagesUpdate(c echo.Context) error {
 func SessionsDestroy(c echo.Context) error {
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
-	  Path:     "/",
-	  MaxAge:   86400 * 7,
-	  HttpOnly: true,
+		Path:     "/",
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
 	}
 
 	if id, _ := strconv.Atoi(c.Param("id")); sess.Values["user_id"].(int) == id {
