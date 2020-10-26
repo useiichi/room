@@ -1,6 +1,6 @@
 module github.com/useiichi/room
 
-go 1.12
+go 1.15
 
 require (
 	github.com/antonlindstrom/pgstore v0.0.0-20170604072116-a407030ba6d0 // indirect
@@ -14,7 +14,7 @@ require (
 	github.com/jinzhu/gorm v1.9.10
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo-contrib v0.6.0
-	github.com/labstack/echo/v4 v4.1.10
+	github.com/labstack/echo/v4 v4.1.17
 	github.com/oxequa/interact v0.0.0-20171114182912-f8fb5795b5d7 // indirect
 	github.com/oxequa/realize v2.0.2+incompatible // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect

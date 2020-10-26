@@ -135,8 +135,8 @@ func main() {
 
 	name, err := os.Hostname()
 	fmt.Printf("Hostname: %s\n", name)
-	if name == "upc" {
-		addr = "postgresql://uuu:oohana@35.185.194.40:26257/taka"
+	if name == "DESKTOP-B9KGMU7" {
+		addr = "postgresql://uuu@localhost:26257/taka?sslmode=disable"
 	} else {
 		addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 	}
