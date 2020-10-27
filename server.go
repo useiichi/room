@@ -60,29 +60,47 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
 	"html/template"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gocraft/dbr"
 	"github.com/gorilla/sessions"
+    "github.com/upper/db/v4"
+    "github.com/upper/db/v4/adapter/cockroachdb"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 )
 
-type Messages struct {
-	Id         int          `db:"id"`
-	Userid     int          `db:"userid"`
+// The settings variable stores connection details.
+var settings = cockroachdb.ConnectionURL{
+    Host:     "localhost",
+    Database: "taka",
+    User:     "uuu",
+    Options: map[string]string{
+        // Insecure node.
+        "sslmode": "disable",
+    },
+}
+
+// Accounts is a handy way to represent a collection.
+func Messages(sess db.Session) db.Store {
+    return sess.Collection("missages")
+}
+
+// Message is used to represent a single record in the "messages" table.
+type Message struct {
+	Id         int       `db:"id,omitempty"`
+	Userid     int       `db:"userid"`
 	Body       string       `db:"body"`
-	Created_at dbr.NullTime `db:"created_at"`
-	Updated_at dbr.NullTime `db:"updated_at"`
+	CreatedAt  time.Time    `db:"created_at"`
+	UpdatedAt  time.Time    `db:"updated_at"`
 }
 
 // CREATE DATABASE taka;
@@ -135,6 +153,13 @@ func main() {
 
 	name, err := os.Hostname()
 	fmt.Printf("Hostname: %s\n", name)
+
+    sess, err := cockroachdb.Open(settings)
+    if err != nil {
+        log.Fatal("cockroachdb.Open: ", err)
+    }
+    defer sess.Close()
+
 	if name == "DESKTOP-B9KGMU7" {
 		addr = "postgresql://uuu@localhost:26257/taka?sslmode=disable"
 	} else {
@@ -334,15 +359,29 @@ func MessagesIndex(c echo.Context) error {
 		my_id = sess.Values["user_id"].(int)
 	}
 
-	db, err := gorm.Open("postgres", addr)
-	if err != nil {
-		c.Echo().Logger.Fatal(err)
-	}
-	defer db.Close()
+    dbsess, err := cockroachdb.Open(settings)
+    if err != nil {
+        c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+    }
+    defer dbsess.Close()
 
 	var co int
 	//sess.Select("count(id)").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).Load(&co)
-	db.Model(&Missage{}).Where("userid = ?", her_id).Or("userid = ?", my_id).Count(&co)
+	//db.Model(&Missage{}).Where("userid = ?", her_id).Or("userid = ?", my_id).Count(&co)
+	rows, err := dbsess.SQL().
+		Query(`SELECT COUNT(id) FROM missages WHERE userid = ? OR userid = ?`, her_id, my_id)
+	if err != nil {
+		log.Fatal("Query: ", err)
+	}
+	if !rows.Next() {
+		log.Fatal("Expecting one row")
+	}
+	if err := rows.Scan(&co); err != nil {
+		log.Fatal("Scan: ", err)
+	}
+	if err := rows.Close(); err != nil {
+		log.Fatal("Close: ", err)
+	}
 	c.Echo().Logger.Debug("count=" + strconv.Itoa(co))
 	//// SELECT count(*) FROM users WHERE name = 'jinzhu'; (count)
 	var max_page int
@@ -355,12 +394,17 @@ func MessagesIndex(c echo.Context) error {
 		pages[i] = i + 1
 	}
 
-	var m []Missage
+	var messages []Message
 	var page int
 	if c.QueryParam("page") == "" || c.QueryParam("page") == "1" {
 		page = 1
 		//sess.SelectBySql("SELECT * FROM messages WHERE userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, numPerPage).Load(&m)
-		db.Order("id desc").Limit(numPerPage).Where("userid = ? OR userid = ?", her_id, my_id).Find(&m)
+		//db.Order("id desc").Limit(numPerPage).Where("userid = ? OR userid = ?", her_id, my_id).Find(&m)
+		//res := dbsess.Collection("missages").Find("userid = ? OR userid = ?", her_id, my_id).OrderBy("-id").Limit(numPerPage)
+		//err = res.All(&messages)
+		rows, err = dbsess.SQL().Query(`SELECT * FROM missages WHERE userid = ? OR userid = ? order by id desc limit ?`, her_id, my_id, numPerPage)
+		iter := dbsess.SQL().NewIterator(rows)
+		err = iter.All(&messages)
 	} else {
 		page, _ = strconv.Atoi(c.QueryParam("page"))
 		//sess.SelectBySql("SELECT * FROM messages join (select min(id) as cutoff from (select id from messages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on messages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Load(&m)
@@ -368,7 +412,9 @@ func MessagesIndex(c echo.Context) error {
 		//↓ mysql?
 		//db.Raw("SELECT * FROM missages join (select min(id) as cutoff from (select id from missages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on missages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Scan(&m)
 		//↓ postgresql?
-		db.Raw("SELECT * FROM missages join (select min(id) as cutoff from (select id from missages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on missages.id < minid.cutoff where userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Scan(&m)
+		rows, err = dbsess.SQL().Query(`SELECT * FROM missages join (select min(id) as cutoff from (select id from missages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on missages.id < minid.cutoff where userid = ? OR userid = ? ORDER BY id desc limit ?`, her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage)
+		iter := dbsess.SQL().NewIterator(rows)
+		err = iter.All(&messages)
 	}
 	//sess.Select("*").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).OrderBy("id desc").Load(&m)
 
@@ -376,8 +422,8 @@ func MessagesIndex(c echo.Context) error {
 		Session_user_id int
 		Current_page    int
 		Pages           []int
-		Mmm             []Missage
-	}{sess.Values["user_id"].(int), page, pages, m})
+		Mmm             []Message
+	}{sess.Values["user_id"].(int), page, pages, messages})
 }
 
 func MessagesNew(c echo.Context) error {

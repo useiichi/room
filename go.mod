@@ -7,7 +7,7 @@ require (
 	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/go-siris/siris v7.4.0+incompatible // indirect
-	github.com/go-sql-driver/mysql v1.4.1
+	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocraft/dbr v0.0.0-20190714181702-8114670a83bd
 	github.com/gorilla/sessions v1.2.0
 	github.com/ipfans/echo-session v3.2.0+incompatible
@@ -18,5 +18,6 @@ require (
 	github.com/oxequa/interact v0.0.0-20171114182912-f8fb5795b5d7 // indirect
 	github.com/oxequa/realize v2.0.2+incompatible // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/upper/db/v4 v4.0.1
 	gopkg.in/urfave/cli.v2 v2.0.0-20190806201727-b62605953717 // indirect
 )
