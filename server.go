@@ -79,15 +79,7 @@ import (
 )
 
 // The settings variable stores connection details.
-var settings = cockroachdb.ConnectionURL{
-    Host:     "localhost",
-    Database: "taka",
-    User:     "uuu",
-    Options: map[string]string{
-        // Insecure node.
-        "sslmode": "disable",
-    },
-}
+var settings cockroachdb.ConnectionURL
 
 // Accounts is a handy way to represent a collection.
 func Messages(sess db.Session) db.Store {
@@ -154,16 +146,29 @@ func main() {
 	name, err := os.Hostname()
 	fmt.Printf("Hostname: %s\n", name)
 
-    sess, err := cockroachdb.Open(settings)
-    if err != nil {
-        log.Fatal("cockroachdb.Open: ", err)
-    }
-    defer sess.Close()
-
 	if name == "DESKTOP-B9KGMU7" {
 		addr = "postgresql://uuu@localhost:26257/taka?sslmode=disable"
+		settings = cockroachdb.ConnectionURL{
+			Host:     "localhost",
+			Database: "taka",
+			User:     "uuu",
+			Options: map[string]string{
+				// Insecure node.
+				"sslmode": "disable",
+			},
+		}
 	} else {
 		addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
+		settings = cockroachdb.ConnectionURL{
+			Host:     "cockroachdb-public.default.svc.cluster.local",
+			Database: "taka",
+			User:     "uuu",
+			Password: "oohana",
+			Options: map[string]string{
+				// Insecure node.
+				"sslmode": "disable",
+			},
+		}
 	}
 
 	db, err := gorm.Open("postgres", addr)
@@ -439,11 +444,13 @@ func MessagesNew(c echo.Context) error {
 }
 
 func MessagesCreate(c echo.Context) error {
-	db, err := gorm.Open("postgres", addr)
-	if err != nil {
-		c.Echo().Logger.Fatal(err)
-	}
-	defer db.Close()
+    dbsess, err := cockroachdb.Open(settings)
+    if err != nil {
+        c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+    }
+	defer dbsess.Close()
+
+	messageCollection := dbsess.Collection("missages")
 
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
@@ -455,20 +462,21 @@ func MessagesCreate(c echo.Context) error {
 	//	Columns("userid", "body", "created_at", "updated_at").
 	//	Values(sess.Values["user_id"].(int), c.FormValue("message[body]"), time.Now(), time.Now()).
 	//	Exec()
-	m := Missage{Userid: sess.Values["user_id"].(int), Body: c.FormValue("message[body]"), CreatedAt: time.Now(), UpdatedAt: time.Now()}
-	db.Create(&m)
+	//m := Missage{Userid: sess.Values["user_id"].(int), Body: c.FormValue("message[body]"), CreatedAt: time.Now(), UpdatedAt: time.Now()}
+	//db.Create(&m)
+	res, err := messageCollection.Insert(Message{
+		Userid: sess.Values["user_id"].(int),
+		Body: c.FormValue("message[body]"),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	})
 
 	//var count int64
-	var lii int64
+	//var lii int64
 	if err != nil {
-		//log.Fatal(err)
-		//count = 1
-	} else {
-		//count, _ = result.RowsAffected()
-		lii = int64(m.Id)
-		//fmt.Println(count) // => 1
+		c.Echo().Logger.Fatal(err)
 	}
-	return c.Redirect(302, "/taka2/messages/"+strconv.FormatInt(lii, 10))
+	return c.Redirect(302, "/taka2/messages/"+fmt.Sprintf("%v", res.ID()))
 }
 
 func MessagesShow(c echo.Context) error {
