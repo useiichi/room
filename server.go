@@ -68,6 +68,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"regexp"
 
 	"github.com/gorilla/sessions"
     "github.com/upper/db/v4"
@@ -480,11 +481,13 @@ func MessagesCreate(c echo.Context) error {
 }
 
 func MessagesShow(c echo.Context) error {
-	db, err := gorm.Open("postgres", addr)
-	if err != nil {
-		c.Echo().Logger.Fatal(err)
-	}
-	defer db.Close()
+    dbsess, err := cockroachdb.Open(settings)
+    if err != nil {
+        c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+    }
+	defer dbsess.Close()
+
+	messageCollection := dbsess.Collection("missages")
 
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
@@ -493,12 +496,17 @@ func MessagesShow(c echo.Context) error {
 		HttpOnly: true,
 	}
 	//sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
-	var mm Missage
-	db.Where("id = ?", c.Param("id")).First(&mm)
-	return c.Render(http.StatusOK, "messages_show", struct {
-		Session_user_id int
-		Mmm             Missage
-	}{sess.Values["user_id"].(int), mm})
+	if regexp.MustCompile(`^[0-9]+$`).MatchString(c.Param("id")) {
+		var message Message
+		res := messageCollection.Find(db.Cond{"id": c.Param("id")})
+		err = res.One(&message)
+		return c.Render(http.StatusOK, "messages_show", struct {
+			Session_user_id int
+			Mmm             Message
+		}{sess.Values["user_id"].(int), message})
+	}else{
+		return c.Render(http.StatusOK, "hello", "World")
+	}
 }
 
 func Suusiki(c echo.Context) error {
