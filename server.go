@@ -73,6 +73,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/upper/db/v4"
 	"github.com/upper/db/v4/adapter/cockroachdb"
 )
@@ -147,10 +148,12 @@ func main() {
 			Host:     "cockroachdb-public.default.svc.cluster.local",
 			Database: "taka",
 			User:     "uuu",
-			Password: "oohana",
+			//Password: "oohana",
 			Options: map[string]string{
-				// Insecure node.
-				"sslmode": "disable",
+				// Secure node.
+				"sslrootcert": "/cockroach-certs/ca.crt",
+				"sslkey":      "/cockroach-certs/client.root.key",
+				"sslcert":     "/cockroach-certs/client.root.crt",
 			},
 		}
 	}
@@ -158,6 +161,9 @@ func main() {
 	e.Static("/taka2/assets", "assets")
 
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "method=${method}, uri=${uri}, status=${status}\n",
+	}))
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
