@@ -147,7 +147,7 @@ func main() {
 		settings = cockroachdb.ConnectionURL{
 			Host:     "cockroachdb-public.default.svc.cluster.local",
 			Database: "taka",
-			User:     "uuu",
+			User:     "root",
 			//Password: "oohana",
 			Options: map[string]string{
 				// Secure node.
