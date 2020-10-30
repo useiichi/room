@@ -71,30 +71,12 @@ import (
 	"time"
 
 	"github.com/gorilla/sessions"
-	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/upper/db/v4"
 	"github.com/upper/db/v4/adapter/cockroachdb"
 )
-
-// The settings variable stores connection details.
-var settings cockroachdb.ConnectionURL
-
-// Accounts is a handy way to represent a collection.
-func Messages(sess db.Session) db.Store {
-	return sess.Collection("missages")
-}
-
-// Message is used to represent a single record in the "messages" table.
-type Message struct {
-	Id        int       `db:"id,omitempty"`
-	Userid    int       `db:"userid"`
-	Body      string    `db:"body"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-}
 
 // CREATE DATABASE taka;
 // SHOW DATABASES;
@@ -129,26 +111,29 @@ type Message struct {
 //	 CONSTRAINT "primary" PRIMARY KEY (id ASC),
 //	 FAMILY "primary" (id, userid, body, created_at, updated_at)
 //	 );
-type Missage struct {
-	Id        int `gorm:"primary_key"` //`gorm:"primary_key;DEFAULT:nextval('messages_seq')"`
-	Userid    int
-	Body      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
 
-var (
-	addr string
-)
+// The settings variable stores connection details.
+var settings cockroachdb.ConnectionURL
+
+// Message is used to represent a single record in the "messages" table.
+type Message struct {
+	Id        int       `db:"id,omitempty"`
+	Userid    int       `db:"userid"`
+	Body      string    `db:"body"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}
 
 func main() {
 	e := echo.New()
 
 	name, err := os.Hostname()
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
 	fmt.Printf("Hostname: %s\n", name)
 
 	if name == "DESKTOP-B9KGMU7" {
-		addr = "postgresql://uuu@localhost:26257/taka?sslmode=disable"
 		settings = cockroachdb.ConnectionURL{
 			Host:     "localhost",
 			Database: "taka",
@@ -159,7 +144,6 @@ func main() {
 			},
 		}
 	} else {
-		addr = "postgresql://uuu:oohana@cockroachdb-public.default.svc.cluster.local:26257/taka"
 		settings = cockroachdb.ConnectionURL{
 			Host:     "cockroachdb-public.default.svc.cluster.local",
 			Database: "taka",
@@ -172,13 +156,6 @@ func main() {
 		}
 	}
 
-	db, err := gorm.Open("postgres", addr)
-	if err != nil {
-		e.Logger.Fatal(err)
-	}
-	defer db.Close()
-	db.AutoMigrate(&Missage{})
-
 	e.Static("/taka2/assets", "assets")
 
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
@@ -186,13 +163,6 @@ func main() {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
-
-	//	e.POST("/users", saveUser)
-	e.GET("/users/:id", getUser)
-	e.GET("/show", show)
-	e.POST("/save", save)
-	//	e.PUT("/users/:id", updateUser)
-	//	e.DELETE("/users/:id", deleteUser)
 
 	e.Static("/static", "static")
 
@@ -262,28 +232,6 @@ func main() {
 		port = "1323"
 	}
 	e.Logger.Fatal(e.Start(":" + port))
-}
-
-// e.GET("/users/:id", getUser)
-func getUser(c echo.Context) error {
-	// User ID from path `users/:id`
-	id := c.Param("id")
-	return c.String(http.StatusOK, id)
-}
-
-//e.GET("/show", show)
-func show(c echo.Context) error {
-	// Get team and member from the query string
-	team := c.QueryParam("team")
-	member := c.QueryParam("member")
-	return c.String(http.StatusOK, "team:"+team+", member:"+member)
-}
-
-func save(c echo.Context) error {
-	// Get name and email
-	name := c.FormValue("name")
-	email := c.FormValue("email")
-	return c.String(http.StatusOK, "name:"+name+", email:"+email)
 }
 
 type Template struct {
@@ -371,8 +319,6 @@ func MessagesIndex(c echo.Context) error {
 	defer dbsess.Close()
 
 	var co int
-	//sess.Select("count(id)").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).Load(&co)
-	//db.Model(&Missage{}).Where("userid = ?", her_id).Or("userid = ?", my_id).Count(&co)
 	rows, err := dbsess.SQL().
 		Query(`SELECT COUNT(id) FROM missages WHERE userid = ? OR userid = ?`, her_id, my_id)
 	if err != nil {
@@ -388,7 +334,6 @@ func MessagesIndex(c echo.Context) error {
 		log.Fatal("Close: ", err)
 	}
 	c.Echo().Logger.Debug("count=" + strconv.Itoa(co))
-	//// SELECT count(*) FROM users WHERE name = 'jinzhu'; (count)
 	var max_page int
 	max_page = co / numPerPage
 	if co%numPerPage != 0 {
@@ -403,17 +348,11 @@ func MessagesIndex(c echo.Context) error {
 	var page int
 	if c.QueryParam("page") == "" || c.QueryParam("page") == "1" {
 		page = 1
-		//sess.SelectBySql("SELECT * FROM messages WHERE userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, numPerPage).Load(&m)
-		//db.Order("id desc").Limit(numPerPage).Where("userid = ? OR userid = ?", her_id, my_id).Find(&m)
-		//res := dbsess.Collection("missages").Find("userid = ? OR userid = ?", her_id, my_id).OrderBy("-id").Limit(numPerPage)
-		//err = res.All(&messages)
 		rows, err = dbsess.SQL().Query(`SELECT * FROM missages WHERE userid = ? OR userid = ? order by id desc limit ?`, her_id, my_id, numPerPage)
 		iter := dbsess.SQL().NewIterator(rows)
 		err = iter.All(&messages)
 	} else {
 		page, _ = strconv.Atoi(c.QueryParam("page"))
-		//sess.SelectBySql("SELECT * FROM messages join (select min(id) as cutoff from (select id from messages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on messages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Load(&m)
-
 		//↓ mysql?
 		//db.Raw("SELECT * FROM missages join (select min(id) as cutoff from (select id from missages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on missages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Scan(&m)
 		//↓ postgresql?
@@ -421,7 +360,6 @@ func MessagesIndex(c echo.Context) error {
 		iter := dbsess.SQL().NewIterator(rows)
 		err = iter.All(&messages)
 	}
-	//sess.Select("*").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).OrderBy("id desc").Load(&m)
 
 	return c.Render(http.StatusOK, "messages_index", struct {
 		Session_user_id int
@@ -458,12 +396,7 @@ func MessagesCreate(c echo.Context) error {
 		MaxAge:   86400 * 7,
 		HttpOnly: true,
 	}
-	//result, err := sess.InsertInto("messages").
-	//	Columns("userid", "body", "created_at", "updated_at").
-	//	Values(sess.Values["user_id"].(int), c.FormValue("message[body]"), time.Now(), time.Now()).
-	//	Exec()
-	//m := Missage{Userid: sess.Values["user_id"].(int), Body: c.FormValue("message[body]"), CreatedAt: time.Now(), UpdatedAt: time.Now()}
-	//db.Create(&m)
+
 	res, err := messageCollection.Insert(Message{
 		Userid:    sess.Values["user_id"].(int),
 		Body:      c.FormValue("message[body]"),
@@ -471,8 +404,6 @@ func MessagesCreate(c echo.Context) error {
 		UpdatedAt: time.Now(),
 	})
 
-	//var count int64
-	//var lii int64
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
 	}
@@ -494,7 +425,7 @@ func MessagesShow(c echo.Context) error {
 		MaxAge:   86400 * 7,
 		HttpOnly: true,
 	}
-	//sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
+
 	if regexp.MustCompile(`^[0-9]+$`).MatchString(c.Param("id")) {
 		var message Message
 		res := messageCollection.Find(db.Cond{"id": c.Param("id")})
