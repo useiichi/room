@@ -71,7 +71,6 @@ import (
 	"time"
 
 	"github.com/gorilla/sessions"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/upper/db/v4"
@@ -81,7 +80,7 @@ import (
 // CREATE DATABASE taka;
 // SHOW DATABASES;
 // USE taka;
-// CREATE TABLE missages (
+// CREATE TABLE messages (
 // id INT NOT NULL,
 // userid INT NULL,
 // body STRING NULL,
@@ -90,9 +89,9 @@ import (
 // CONSTRAINT "primary" PRIMARY KEY (id ASC),
 // FAMILY "primary" (id, userid, body, created_at, updated_at)
 // );
-// CREATE SEQUENCE missages_seq;
-// show create missages_seq;
-// ALTER TABLE missages ALTER COLUMN id SET DEFAULT nextval('missages_seq');
+// CREATE SEQUENCE messages_seq;
+// show create messages_seq;
+// ALTER TABLE messages ALTER COLUMN id SET DEFAULT nextval('messages_seq');
 // CREATE USER uuu WITH PASSWORD 'oohana';
 // select * from pg_user;
 // GRANT ALL ON DATABASE taka TO uuu;
@@ -102,7 +101,7 @@ import (
 //
 // ↓別のAuto Increment方法（これだと、idが484778898812534786のようになる）
 //
-// CREATE TABLE missages (
+// CREATE TABLE messages (
 // 	 id SERIAL NOT NULL,
 // 	 userid INT NULL,
 // 	 body STRING NULL,
@@ -319,7 +318,7 @@ func MessagesIndex(c echo.Context) error {
 
 	var co int
 	rows, err := dbsess.SQL().
-		Query(`SELECT COUNT(id) FROM missages WHERE userid = ? OR userid = ?`, her_id, my_id)
+		Query(`SELECT COUNT(id) FROM messages WHERE userid = ? OR userid = ?`, her_id, my_id)
 	if err != nil {
 		log.Fatal("Query: ", err)
 	}
@@ -347,15 +346,15 @@ func MessagesIndex(c echo.Context) error {
 	var page int
 	if c.QueryParam("page") == "" || c.QueryParam("page") == "1" {
 		page = 1
-		rows, err = dbsess.SQL().Query(`SELECT * FROM missages WHERE userid = ? OR userid = ? order by id desc limit ?`, her_id, my_id, numPerPage)
+		rows, err = dbsess.SQL().Query(`SELECT * FROM messages WHERE userid = ? OR userid = ? order by id desc limit ?`, her_id, my_id, numPerPage)
 		iter := dbsess.SQL().NewIterator(rows)
 		err = iter.All(&messages)
 	} else {
 		page, _ = strconv.Atoi(c.QueryParam("page"))
 		//↓ mysql?
-		//db.Raw("SELECT * FROM missages join (select min(id) as cutoff from (select id from missages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on missages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Scan(&m)
+		//db.Raw("SELECT * FROM messages join (select min(id) as cutoff from (select id from messages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on messages.id < minid.cutoff having userid = ? OR userid = ? ORDER BY id desc limit ?", her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage).Scan(&m)
 		//↓ postgresql?
-		rows, err = dbsess.SQL().Query(`SELECT * FROM missages join (select min(id) as cutoff from (select id from missages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on missages.id < minid.cutoff where userid = ? OR userid = ? ORDER BY id desc limit ?`, her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage)
+		rows, err = dbsess.SQL().Query(`SELECT * FROM messages join (select min(id) as cutoff from (select id from messages WHERE userid = ? OR userid = ? order by id desc limit ?) trim) minid on messages.id < minid.cutoff where userid = ? OR userid = ? ORDER BY id desc limit ?`, her_id, my_id, (page-1)*numPerPage, her_id, my_id, numPerPage)
 		iter := dbsess.SQL().NewIterator(rows)
 		err = iter.All(&messages)
 	}
@@ -387,7 +386,7 @@ func MessagesCreate(c echo.Context) error {
 	}
 	defer dbsess.Close()
 
-	messageCollection := dbsess.Collection("missages")
+	messageCollection := dbsess.Collection("messages")
 
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
@@ -416,7 +415,7 @@ func MessagesShow(c echo.Context) error {
 	}
 	defer dbsess.Close()
 
-	messageCollection := dbsess.Collection("missages")
+	messageCollection := dbsess.Collection("messages")
 
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
@@ -445,7 +444,7 @@ func MessagesDestroy(c echo.Context) error {
 	}
 	defer dbsess.Close()
 
-	messageCollection := dbsess.Collection("missages")
+	messageCollection := dbsess.Collection("messages")
 
 	res := messageCollection.Find(db.Cond{"id": c.Param("id")})
 	err = res.Delete()
@@ -460,7 +459,7 @@ func MessagesEdit(c echo.Context) error {
 	}
 	defer dbsess.Close()
 
-	messageCollection := dbsess.Collection("missages")
+	messageCollection := dbsess.Collection("messages")
 
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
@@ -485,7 +484,7 @@ func MessagesUpdate(c echo.Context) error {
 	}
 	defer dbsess.Close()
 
-	messageCollection := dbsess.Collection("missages")
+	messageCollection := dbsess.Collection("messages")
 
 	var message Message
 	res := messageCollection.Find(db.Cond{"id": c.Param("id")})
