@@ -251,7 +251,6 @@ func main() {
 	e.GET("/taka2/messages/:id/delete", MessagesDestroy, track)
 	e.GET("/taka2/messages/:id/edit", MessagesEdit, track)
 	e.POST("/taka2/messages/:id", MessagesUpdate, track)
-	e.GET("/taka2/suusiki", Suusiki)
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		fmt.Println(err)                                    // 標準出力へ
@@ -507,25 +506,6 @@ func MessagesShow(c echo.Context) error {
 	} else {
 		return c.Render(http.StatusOK, "hello", "World")
 	}
-}
-
-func Suusiki(c echo.Context) error {
-	db, err := gorm.Open("postgres", addr)
-	if err != nil {
-		c.Echo().Logger.Fatal(err)
-	}
-	defer db.Close()
-
-	m := Missage{Userid: 2, Body: c.QueryParam("page"), CreatedAt: time.Now(), UpdatedAt: time.Now()}
-	db.Create(&m)
-
-	//sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
-	var mm Missage
-	//db.Where("id = ?", c.Param("id")).First(&mm)
-	return c.Render(http.StatusOK, "suusiki", struct {
-		Session_user_id int
-		Mmm             Missage
-	}{1, mm})
 }
 
 func MessagesDestroy(c echo.Context) error {
