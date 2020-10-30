@@ -149,7 +149,8 @@ func main() {
 			User:     "uuu",
 			Password: "oohana",
 			Options: map[string]string{
-				"sslmode": "enable",
+				// Insecure node.
+				"sslmode": "disable",
 			},
 		}
 	}
