@@ -60,23 +60,23 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"time"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
-	"regexp"
+	"time"
 
 	"github.com/gorilla/sessions"
-    "github.com/upper/db/v4"
-    "github.com/upper/db/v4/adapter/cockroachdb"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
+	"github.com/upper/db/v4"
+	"github.com/upper/db/v4/adapter/cockroachdb"
 )
 
 // The settings variable stores connection details.
@@ -84,16 +84,16 @@ var settings cockroachdb.ConnectionURL
 
 // Accounts is a handy way to represent a collection.
 func Messages(sess db.Session) db.Store {
-    return sess.Collection("missages")
+	return sess.Collection("missages")
 }
 
 // Message is used to represent a single record in the "messages" table.
 type Message struct {
-	Id         int       `db:"id,omitempty"`
-	Userid     int       `db:"userid"`
-	Body       string       `db:"body"`
-	CreatedAt  time.Time    `db:"created_at"`
-	UpdatedAt  time.Time    `db:"updated_at"`
+	Id        int       `db:"id,omitempty"`
+	Userid    int       `db:"userid"`
+	Body      string    `db:"body"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 // CREATE DATABASE taka;
@@ -365,11 +365,11 @@ func MessagesIndex(c echo.Context) error {
 		my_id = sess.Values["user_id"].(int)
 	}
 
-    dbsess, err := cockroachdb.Open(settings)
-    if err != nil {
-        c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
-    }
-    defer dbsess.Close()
+	dbsess, err := cockroachdb.Open(settings)
+	if err != nil {
+		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+	}
+	defer dbsess.Close()
 
 	var co int
 	//sess.Select("count(id)").From("messages").Where("userid = ? OR userid = ?", her_id, my_id).Load(&co)
@@ -445,10 +445,10 @@ func MessagesNew(c echo.Context) error {
 }
 
 func MessagesCreate(c echo.Context) error {
-    dbsess, err := cockroachdb.Open(settings)
-    if err != nil {
-        c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
-    }
+	dbsess, err := cockroachdb.Open(settings)
+	if err != nil {
+		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+	}
 	defer dbsess.Close()
 
 	messageCollection := dbsess.Collection("missages")
@@ -466,8 +466,8 @@ func MessagesCreate(c echo.Context) error {
 	//m := Missage{Userid: sess.Values["user_id"].(int), Body: c.FormValue("message[body]"), CreatedAt: time.Now(), UpdatedAt: time.Now()}
 	//db.Create(&m)
 	res, err := messageCollection.Insert(Message{
-		Userid: sess.Values["user_id"].(int),
-		Body: c.FormValue("message[body]"),
+		Userid:    sess.Values["user_id"].(int),
+		Body:      c.FormValue("message[body]"),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	})
@@ -481,10 +481,10 @@ func MessagesCreate(c echo.Context) error {
 }
 
 func MessagesShow(c echo.Context) error {
-    dbsess, err := cockroachdb.Open(settings)
-    if err != nil {
-        c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
-    }
+	dbsess, err := cockroachdb.Open(settings)
+	if err != nil {
+		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+	}
 	defer dbsess.Close()
 
 	messageCollection := dbsess.Collection("missages")
@@ -504,7 +504,7 @@ func MessagesShow(c echo.Context) error {
 			Session_user_id int
 			Mmm             Message
 		}{sess.Values["user_id"].(int), message})
-	}else{
+	} else {
 		return c.Render(http.StatusOK, "hello", "World")
 	}
 }
@@ -529,26 +529,28 @@ func Suusiki(c echo.Context) error {
 }
 
 func MessagesDestroy(c echo.Context) error {
-	db, err := gorm.Open("postgres", addr)
+	dbsess, err := cockroachdb.Open(settings)
 	if err != nil {
-		c.Echo().Logger.Fatal(err)
+		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
 	}
-	defer db.Close()
+	defer dbsess.Close()
 
-	//sess.DeleteFrom("messages").
-	//	Where("id = ?", c.Param("id")).
-	//	Exec()
-	db.Where("id = ?", c.Param("id")).Delete(&Missage{})
+	messageCollection := dbsess.Collection("missages")
+
+	res := messageCollection.Find(db.Cond{"id": c.Param("id")})
+	err = res.Delete()
 
 	return c.Redirect(302, "/taka2/messages/")
 }
 
 func MessagesEdit(c echo.Context) error {
-	db, err := gorm.Open("postgres", addr)
+	dbsess, err := cockroachdb.Open(settings)
 	if err != nil {
-		c.Echo().Logger.Fatal(err)
+		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
 	}
-	defer db.Close()
+	defer dbsess.Close()
+
+	messageCollection := dbsess.Collection("missages")
 
 	sess, _ := session.Get("session", c)
 	sess.Options = &sessions.Options{
@@ -556,43 +558,36 @@ func MessagesEdit(c echo.Context) error {
 		MaxAge:   86400 * 7,
 		HttpOnly: true,
 	}
-	//var m []Messages
-	//sess.Select("*").From("messages").Where("id = ?", c.Param("id")).Load(&m)
-	var mm Missage
-	db.Where("id = ?", c.Param("id")).First(&mm)
+
+	var message Message
+	res := messageCollection.Find(db.Cond{"id": c.Param("id")})
+	err = res.One(&message)
 	return c.Render(http.StatusOK, "messages_edit", struct {
 		Session_user_id int
-		Mmm             Missage
-	}{sess.Values["user_id"].(int), mm})
+		Mmm             Message
+	}{sess.Values["user_id"].(int), message})
 }
 
 func MessagesUpdate(c echo.Context) error {
-	db, err := gorm.Open("postgres", addr)
+	dbsess, err := cockroachdb.Open(settings)
+	if err != nil {
+		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+	}
+	defer dbsess.Close()
+
+	messageCollection := dbsess.Collection("missages")
+
+	var message Message
+	res := messageCollection.Find(db.Cond{"id": c.Param("id")})
+	err = res.One(&message)
+	message.Body = c.FormValue("message[body]")
+	message.UpdatedAt = time.Now()
+	err = res.Update(message)
+
 	if err != nil {
 		c.Echo().Logger.Fatal(err)
-	}
-	defer db.Close()
-
-	//result, err := sess.Update("messages").
-	//	Set("body", c.FormValue("message[body]")).
-	//	Set("updated_at", time.Now()).
-	//	Where("id = ?", c.Param("id")).
-	//	Exec()
-
-	var mm Missage
-	db.Where("id = ?", c.Param("id")).First(&mm)
-	mm.Body = c.FormValue("message[body]")
-	mm.UpdatedAt = time.Now()
-	db.Save(&mm)
-
-	var count int64 = 1
-	if err != nil {
-		//log.Fatal(err)
 	} else {
-		//count, _ = result.RowsAffected()
-		//fmt.Println(count) // => 1
 	}
-	count = count + 1
 	return c.Redirect(302, "/taka2/messages/"+c.Param("id"))
 }
 
