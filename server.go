@@ -278,13 +278,13 @@ func createSessions(c echo.Context) error {
 	}
 
 	password := c.FormValue("password")
-	if password == "sena" || password == "Sena" {
+	if password == "haruhi" || password == "haluhi" {
 		sess.Values["user_id"] = 1
 		sess.Save(c.Request(), c.Response())
 	} else if password == "uuu" {
 		sess.Values["user_id"] = 2
 		sess.Save(c.Request(), c.Response())
-	} else if password == "nagasaki" || password == "nagahashi" || password == "Nagahashi" || password == "nagahasi" || password == "Nagahasi" {
+	} else if password == "nagasaki" || password == "nagahashi" {
 		sess.Values["user_id"] = 3
 		sess.Save(c.Request(), c.Response())
 	} else if password == "uuunagasaki" {
