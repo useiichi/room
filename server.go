@@ -318,14 +318,14 @@ func MessagesIndex(c echo.Context) error {
 	}
 
 	var dbsess db.Session
+	var err error
 	for i := 0; i < 5; i++ {
-		var err error
 		dbsess, err = cockroachdb.Open(settings)
 		if err != nil {
 			//c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
-			log.Printf("cockroachdb.Open: ")
+			log.Print("cockroachdb.Open: ", err)
 		} else {
-			log.Printf("ok")
+			log.Printf("cockroachdb.Open ok")
 			break
 		}
 	}
@@ -395,9 +395,17 @@ func MessagesNew(c echo.Context) error {
 }
 
 func MessagesCreate(c echo.Context) error {
-	dbsess, err := cockroachdb.Open(settings)
-	if err != nil {
-		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+	var dbsess db.Session
+	var err error
+	for i := 0; i < 5; i++ {
+		dbsess, err = cockroachdb.Open(settings)
+		if err != nil {
+			//c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+			log.Print("cockroachdb.Open: ", err)
+		} else {
+			log.Printf("cockroachdb.Open ok")
+			break
+		}
 	}
 	defer dbsess.Close()
 
@@ -424,9 +432,17 @@ func MessagesCreate(c echo.Context) error {
 }
 
 func MessagesShow(c echo.Context) error {
-	dbsess, err := cockroachdb.Open(settings)
-	if err != nil {
-		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+	var dbsess db.Session
+	var err error
+	for i := 0; i < 5; i++ {
+		dbsess, err = cockroachdb.Open(settings)
+		if err != nil {
+			//c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+			log.Print("cockroachdb.Open: ", err)
+		} else {
+			log.Printf("cockroachdb.Open ok")
+			break
+		}
 	}
 	defer dbsess.Close()
 
@@ -453,9 +469,17 @@ func MessagesShow(c echo.Context) error {
 }
 
 func MessagesDestroy(c echo.Context) error {
-	dbsess, err := cockroachdb.Open(settings)
-	if err != nil {
-		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+	var dbsess db.Session
+	var err error
+	for i := 0; i < 5; i++ {
+		dbsess, err = cockroachdb.Open(settings)
+		if err != nil {
+			//c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+			log.Print("cockroachdb.Open: ", err)
+		} else {
+			log.Printf("cockroachdb.Open ok")
+			break
+		}
 	}
 	defer dbsess.Close()
 
@@ -468,9 +492,17 @@ func MessagesDestroy(c echo.Context) error {
 }
 
 func MessagesEdit(c echo.Context) error {
-	dbsess, err := cockroachdb.Open(settings)
-	if err != nil {
-		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+	var dbsess db.Session
+	var err error
+	for i := 0; i < 5; i++ {
+		dbsess, err = cockroachdb.Open(settings)
+		if err != nil {
+			//c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+			log.Print("cockroachdb.Open: ", err)
+		} else {
+			log.Printf("cockroachdb.Open ok")
+			break
+		}
 	}
 	defer dbsess.Close()
 
@@ -493,9 +525,17 @@ func MessagesEdit(c echo.Context) error {
 }
 
 func MessagesUpdate(c echo.Context) error {
-	dbsess, err := cockroachdb.Open(settings)
-	if err != nil {
-		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+	var dbsess db.Session
+	var err error
+	for i := 0; i < 5; i++ {
+		dbsess, err = cockroachdb.Open(settings)
+		if err != nil {
+			//c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+			log.Print("cockroachdb.Open: ", err)
+		} else {
+			log.Printf("cockroachdb.Open ok")
+			break
+		}
 	}
 	defer dbsess.Close()
 
