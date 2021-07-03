@@ -317,9 +317,15 @@ func MessagesIndex(c echo.Context) error {
 		my_id = sess.Values["user_id"].(int)
 	}
 
-	dbsess, err := cockroachdb.Open(settings)
-	if err != nil {
-		c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+	var dbsess db.Session
+	for i := 0; i < 5; i++ {
+		var err error
+		dbsess, err = cockroachdb.Open(settings)
+		if err != nil {
+			c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
+		} else {
+			break
+		}
 	}
 	defer dbsess.Close()
 
