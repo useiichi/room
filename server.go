@@ -323,8 +323,9 @@ func MessagesIndex(c echo.Context) error {
 		dbsess, err = cockroachdb.Open(settings)
 		if err != nil {
 			//c.Echo().Logger.Fatal("cockroachdb.Open: ", err)
-			log.Fatal("cockroachdb.Open: ", err)
+			log.Printf("cockroachdb.Open: ")
 		} else {
+			log.Printf("ok")
 			break
 		}
 	}
