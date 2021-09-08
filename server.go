@@ -82,7 +82,7 @@ import (
 // SHOW DATABASES;
 // USE taka;
 // CREATE TABLE messages (
-// id INT NOT NULL,
+// id INT NOT NULL DEFAULT unique_rowid(),
 // userid INT NULL,
 // body STRING NULL,
 // created_at TIMESTAMP NULL,
@@ -90,9 +90,6 @@ import (
 // CONSTRAINT "primary" PRIMARY KEY (id ASC),
 // FAMILY "primary" (id, userid, body, created_at, updated_at)
 // );
-// CREATE SEQUENCE messages_seq;
-// show create messages_seq;
-// ALTER TABLE messages ALTER COLUMN id SET DEFAULT nextval('messages_seq');
 // CREATE USER uuu WITH PASSWORD 'oohana';
 // select * from pg_user;
 // GRANT ALL ON DATABASE taka TO uuu;
