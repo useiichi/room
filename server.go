@@ -81,6 +81,7 @@ import (
 // CREATE DATABASE taka;
 // SHOW DATABASES;
 // USE taka;
+// CREATE TABLE messages (id INT NOT NULL DEFAULT unique_rowid(),userid INT NULL,body STRING NULL,created_at TIMESTAMP NULL,updated_at TIMESTAMP NULL,CONSTRAINT "primary" PRIMARY KEY (id ASC),FAMILY "primary" (id, userid, body, created_at, updated_at));
 // CREATE TABLE messages (
 // id INT NOT NULL DEFAULT unique_rowid(),
 // userid INT NULL,
