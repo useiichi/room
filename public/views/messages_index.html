@@ -29,7 +29,7 @@
    		<p><img src="/taka2/assets/images/ineko3b.gif" alt="ineko3b" /></p>
    	</td>
     <td style="vertical-align: top; color: #FF69B4">
-		{{nl2br .Body}}
+		{{.Body | nl2br}}
     </td>
 		{{end}}
 		{{if eq (mod .Userid 2) 0}}
@@ -37,7 +37,7 @@
    		<p><img src="/taka2/assets/images/iuki1d.gif" alt="iuki1d" /></p>
    	</td>
     <td style="vertical-align: top; color: blue">
-    	{{nl2br .Body}}
+    	{{.Body | nl2br}}
     </td>
 	    {{end}}
     <td style="vertical-align: top"><p>{{.UpdatedAt | dt}}</p></td>

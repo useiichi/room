@@ -175,8 +175,39 @@ func main() {
 		"mul": func(a, b int) int { return a * b },
 		"div": func(a, b int) int { return a / b },
 		"mod": func(a, b int) int { return a % b },
+		// {{ template "foo.tpl" . }}で呼び出されたテンプレート内でsetすることで、その値を呼び出し元で参照することができます。{{ set . "_nav" "contact" }}
+		"set": func(renderArgs map[string]interface{}, key string, value interface{}) template.JS {
+			renderArgs[key] = value
+			return template.JS("")
+		},
+		// nilまたは空文字列に対するデフォルト値を指定します。{{ .name | default "名無しさん" }}
+		"default": func(defVal interface{}, args ...interface{}) (interface{}, error) {
+			if len(args) >= 2 {
+				return nil, fmt.Errorf("wrong number of args for default: want 2 got %d", len(args)+1)
+			}
+			args = append(args, defVal)
+			for _, val := range args {
+				switch val.(type) {
+				case nil:
+					continue
+				case string:
+					if val == "" {
+						continue
+					}
+					return val, nil
+				default:
+					return val, nil
+				}
+			}
+			return nil, nil
+		},
+		// Replaces newlines with <br />
 		"nl2br": func(text string) template.HTML {
 			return template.HTML(strings.Replace(template.HTMLEscapeString(text), "\n", "<br />", -1))
+		},
+		// Skips sanitation on the parameter.  Do not use with dynamic data.
+		"raw": func(text string) template.HTML {
+			return template.HTML(text)
 		},
 		"dt":  func(a time.Time) string { return a.Format("2006年01月02日, 15:04:05") },
 		"len": func(a []int) int { return len(a) },
