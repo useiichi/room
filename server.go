@@ -175,7 +175,9 @@ func main() {
 		"mul": func(a, b int) int { return a * b },
 		"div": func(a, b int) int { return a / b },
 		"mod": func(a, b int) int { return a % b },
-		"br":  func(a string) string { return strings.Replace(a, "\n", "<br/>", -1) },
+		"nl2br": func(text string) template.HTML {
+			return template.HTML(strings.Replace(template.HTMLEscapeString(text), "\n", "<br />", -1))
+		},
 		"dt":  func(a time.Time) string { return a.Format("2006年01月02日, 15:04:05") },
 		"len": func(a []int) int { return len(a) },
 	}

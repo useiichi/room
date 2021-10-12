@@ -10,7 +10,7 @@
 <form class="form-group" id="new_message" action="/taka2/messages/{{.Mmm.Id}}" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="PUkYzx9U9Zoz8aa9NeWpu/c0jHDm70PgO2Bwjp1SyP3UvTHp4BiQYZNoJ5WnJpbvgD6wb7cuKudTaB34tAo21w==" />
 
   <div class="form-group">
-       メッセージ<br>
+       メッセージ<br />
     <textarea class="form-control form-control-lg" name="message[body]" id="message_body">{{.Mmm.Body}}</textarea>
   </div>
   <button class="btn btn-primary" type="submit">書き込む</button>
