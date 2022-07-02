@@ -101,14 +101,14 @@ import (
 // ↓別のAuto Increment方法（これだと、idが484778898812534786のようになる）
 //
 // CREATE TABLE messages (
-// 	 id SERIAL NOT NULL,
-// 	 userid INT NULL,
-// 	 body STRING NULL,
-//	 created_at TIMESTAMP NULL,
-//	 updated_at TIMESTAMP NULL,
-//	 CONSTRAINT "primary" PRIMARY KEY (id ASC),
-//	 FAMILY "primary" (id, userid, body, created_at, updated_at)
-//	 );
+// id SERIAL NOT NULL,
+// userid INT NULL,
+// body STRING NULL,
+// created_at TIMESTAMP NULL,
+// updated_at TIMESTAMP NULL,
+// CONSTRAINT "primary" PRIMARY KEY (id ASC),
+// FAMILY "primary" (id, userid, body, created_at, updated_at)
+// );
 
 // The settings variable stores connection details.
 var settings cockroachdb.ConnectionURL
