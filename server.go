@@ -309,7 +309,7 @@ func createSessions(c echo.Context) error {
 	}
 
 	password := c.FormValue("password")
-	if password == "haruhi" || password == "haluhi" {
+	if password == "rin" || password == "lin" {
 		sess.Values["user_id"] = 1
 		sess.Save(c.Request(), c.Response())
 	} else if password == "uuu" {
