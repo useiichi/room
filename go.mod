@@ -1,23 +1,26 @@
 module github.com/useiichi/room
 
-go 1.15
+go 1.26.0
 
 require (
-	github.com/antonlindstrom/pgstore v0.0.0-20170604072116-a407030ba6d0 // indirect
-	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
-	github.com/fatih/color v1.7.0 // indirect
-	github.com/go-siris/siris v7.4.0+incompatible // indirect
-	github.com/go-sql-driver/mysql v1.5.0
-	github.com/gocraft/dbr v0.0.0-20190714181702-8114670a83bd
 	github.com/gorilla/sessions v1.2.0
-	github.com/ipfans/echo-session v3.2.0+incompatible
-	github.com/jinzhu/gorm v1.9.10
-	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo-contrib v0.6.0
-	github.com/labstack/echo/v4 v4.1.17
-	github.com/oxequa/interact v0.0.0-20171114182912-f8fb5795b5d7 // indirect
-	github.com/oxequa/realize v2.0.2+incompatible // indirect
-	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/labstack/echo/v4 v4.16.3
 	github.com/upper/db/v4 v4.0.1
-	gopkg.in/urfave/cli.v2 v2.0.0-20190806201727-b62605953717 // indirect
+)
+
+require (
+	github.com/gorilla/context v1.1.1 // indirect
+	github.com/gorilla/securecookie v1.1.1 // indirect
+	github.com/labstack/gommon v0.5.0 // indirect
+	github.com/lib/pq v1.8.0 // indirect
+	github.com/mattn/go-colorable v0.1.15 // indirect
+	github.com/mattn/go-isatty v0.0.22 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasttemplate v1.2.2 // indirect
+	golang.org/x/crypto v0.57.0 // indirect
+	golang.org/x/net v0.60.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/time v0.15.0 // indirect
 )
